@@ -39,17 +39,44 @@ window.addEventListener('DOMContentLoaded', (event) => {
         const END_FREQ = 1500;
         const NEXT_BIT_FREQ = 1200;
         const TONE_LENGTH_MS = 50;
-
+    
+        // Convertir le texte en une séquence de bits.
+        const textToBits = text => {
+            return text.split('').map(char => {
+                const charCode = char.charCodeAt(0).toString(2);
+                // Assurer que chaque byte a 8 bits de longueur.
+                return charCode.padStart(8, '0');
+            }).join('');
+        };
+    
+        // Jouer un ton pour chaque bit.
+        const playBit = (bit, index) => {
+            setTimeout(() => {
+                playTone(bit === '1' ? BIT_1_FREQ : BIT_0_FREQ, TONE_LENGTH_MS);
+                // Jouer le ton de confirmation pour le bit suivant.
+                if (index % 8 === 7) {
+                    setTimeout(() => {
+                        playTone(NEXT_BIT_FREQ, TONE_LENGTH_MS);
+                    }, TONE_LENGTH_MS);
+                }
+            }, index * TONE_LENGTH_MS * 2);
+        };
+    
+        // Commencer la transmission
         playTone(START_FREQ, TONE_LENGTH_MS);
-
-        // Ici, vous devez implémenter la logique pour convertir votre texte en une série de tons.
-        // ...
-
-        // Pour l'exemple, nous jouerons juste le ton de début et de fin.
+    
+        // Convertir le texte en bits et les jouer.
+        const bits = textToBits(text);
+        bits.split('').forEach(playBit);
+    
+        // Terminer la transmission après tous les bits.
         setTimeout(() => {
             playTone(END_FREQ, TONE_LENGTH_MS);
-        }, TONE_LENGTH_MS * 2); // juste un délai avant de jouer le ton de fin
+        }, bits.length * TONE_LENGTH_MS * 2);
     }
+    
+    // La fonction playTone reste la même.
+    
 
     document.getElementById('send-sound').addEventListener('click', function() {
         var text = document.getElementById('text-input').value;
