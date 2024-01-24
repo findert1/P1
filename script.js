@@ -1,85 +1,66 @@
-// On déclare l'audioContext en dehors de toute interaction utilisateur pour éviter les problèmes de politique de lecture automatique.
-var audioContext;
+function sendTextAsSound(text) {
+    const START_FREQ = 1024;
+    const STEP_FREQ = (text.length <= 4) ? 256 : 16; // Exemple pour 4 bits ou 8 bits
+    const END_FREQ = 8192;
 
-// Nous attendons que le DOM soit complètement chargé avant d'ajouter le gestionnaire d'événements.
-window.addEventListener('DOMContentLoaded', (event) => {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    // Encode with Reed Solomon ( pas encore implémenter )
+    const encodedData = reedSolomonEncode(text);
 
-    // Lier le bouton à une fonction qui jouera le son.
-    document.getElementById('play-sound').addEventListener('click', function() {
-        // Reprendre l'AudioContext au cas où il serait en état suspendu.
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
+    // Emettre le ton de début
+    playTone(START_FREQ, TONE_LENGTH_MS);
 
-        // Créer un nouvel oscillateur pour chaque clic, lié au contexte audio existant.
-        var oscillator = audioContext.createOscillator();
-        oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // Fréquence en Hz (La à 440Hz)
-        oscillator.connect(audioContext.destination);
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 1); // Joue le son pendant 1 seconde
-    });
-});
+    // Convertir chaque caractère en ton
+    for (let i = 0; i < encodedData.length; i++) {
+        const charCode = encodedData.charCodeAt(i);
+        const freq = START_FREQ + (charCode * STEP_FREQ);
+        playTone(freq, TONE_LENGTH_MS);
+    }
 
-window.addEventListener('DOMContentLoaded', (event) => {
-    var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    // Emettre le ton de fin
+    setTimeout(() => {
+        playTone(END_FREQ, TONE_LENGTH_MS);
+    }, TONE_LENGTH_MS * 2);
+}
 
+function playTone(freq, duration) {
+    // Fonction pour jouer un ton à une fréquence et durée spécifiées
     function playTone(freq, duration) {
-        var oscillator = audioContext.createOscillator();
-        oscillator.frequency.value = freq;
-        oscillator.connect(audioContext.destination);
+        // Créer un nouveau contexte audio
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+        // Créer un oscillateur
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'sine'; // Type d'onde: 'sine' pour une onde sinusoïdale
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime); // Fréquence en Hz
+    
+        // Créer un gain (pour contrôler le volume)
+        const gainNode = audioContext.createGain();
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime); // Volume initial
+    
+        // Connecter l'oscillateur au gain puis au contexte audio
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+    
+        // Démarrer l'oscillateur
         oscillator.start();
-        oscillator.stop(audioContext.currentTime + duration / 1000);
-    }
-
-    function sendTextAsSound(text) {
-        const START_FREQ = 2000;
-        const BIT_1_FREQ = 600;
-        const BIT_0_FREQ = 800;
-        const END_FREQ = 1500;
-        const NEXT_BIT_FREQ = 1200;
-        const TONE_LENGTH_MS = 50;
     
-        // Convertir le texte en une séquence de bits.
-        const textToBits = text => {
-            return text.split('').map(char => {
-                const charCode = char.charCodeAt(0).toString(2);
-                // Assurer que chaque byte a 8 bits de longueur.
-                return charCode.padStart(8, '0');
-            }).join('');
-        };
-    
-        // Jouer un ton pour chaque bit.
-        const playBit = (bit, index) => {
-            setTimeout(() => {
-                playTone(bit === '1' ? BIT_1_FREQ : BIT_0_FREQ, TONE_LENGTH_MS);
-                // Jouer le ton de confirmation pour le bit suivant.
-                if (index % 8 === 7) {
-                    setTimeout(() => {
-                        playTone(NEXT_BIT_FREQ, TONE_LENGTH_MS);
-                    }, TONE_LENGTH_MS);
-                }
-            }, index * TONE_LENGTH_MS * 2);
-        };
-    
-        // Commencer la transmission
-        playTone(START_FREQ, TONE_LENGTH_MS);
-    
-        // Convertir le texte en bits et les jouer.
-        const bits = textToBits(text);
-        bits.split('').forEach(playBit);
-    
-        // Terminer la transmission après tous les bits.
+        // Arrêter l'oscillateur après la durée spécifiée
         setTimeout(() => {
-            playTone(END_FREQ, TONE_LENGTH_MS);
-        }, bits.length * TONE_LENGTH_MS * 2);
+            oscillator.stop();
+            audioContext.close(); // Fermer le contexte audio après avoir joué le son
+        }, duration);
     }
     
-    // La fonction playTone reste la même.
+}
+
+function reedSolomonEncode(data) {
+    // Vous devez inclure/importer une bibliothèque Reed Solomon ici
+    // Par exemple, quelque chose comme `import rs from 'some-reed-solomon-lib';`
     
 
-    document.getElementById('send-sound').addEventListener('click', function() {
-        var text = document.getElementById('text-input').value;
-        sendTextAsSound(text);
-    });
-});
+    // Encoder les données
+    let encodedData = rs.encode(data);
+
+    return encodedData;
+}
+
