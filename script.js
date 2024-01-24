@@ -1,6 +1,8 @@
 // Fonction pour obtenir la référence de l'élément d'entrée de texte et du bouton
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
+const TONE_LENGTH_MS = 50; // Remplacez 50 par la durée en millisecondes que l'on souhaite
+
 
 // Écouteur d'événement pour le bouton
 sendButton.addEventListener("click", function() {
