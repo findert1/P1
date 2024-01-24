@@ -1,7 +1,8 @@
 // Fonction pour obtenir la référence de l'élément d'entrée de texte et du bouton
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
-const TONE_LENGTH_MS = 500; // Remplacez 50 par la durée en millisecondes que l'on souhaite
+const TONE_LENGTH_MS = 250; // Remplacez 50 par la durée en millisecondes que l'on souhaite
+const ADDITIONAL_DELAY_MS=500 // délais de départ
 
 
 // Écouteur d'événement pour le bouton
@@ -17,9 +18,18 @@ function sendTextAsSound(text) {
     const tones = [];
 
     // Créer un tableau de fréquences pour chaque caractère
+    // Créer un tableau de fréquences pour chaque caractère
     for (let i = 0; i < text.length; i++) {
         const charCode = text.charCodeAt(i);
-        const freq = START_FREQ + (charCode * STEP_FREQ);
+        let freq = START_FREQ + (charCode * STEP_FREQ);
+
+        // Vérifier que la fréquence calculée est dans la plage autorisée
+        if (freq < -24000) {
+            freq = -24000;
+        } else if (freq > 24000) {
+            freq = 24000;
+        }
+
         tones.push(freq);
     }
 
@@ -39,7 +49,12 @@ function sendTextAsSound(text) {
     }
 
     // Démarrer la séquence de tonalités
-    playTonesSequentially(0);
+    // Démarrer la séquence de tonalités avec le son de départ
+    playTone(START_FREQ, TONE_LENGTH_MS);
+    setTimeout(() => {
+        playTonesSequentially(0);
+    }, ADDITIONAL_DELAY_MS); // Ajout d'un délais au début
+
 }
 
 
