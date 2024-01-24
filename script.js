@@ -1,2 +1,5 @@
-// Affiche un message dans la console du navigateur
-console.log("Bonjour, monde !");
+var context = new AudioContext()
+var o = context.createOscillator()
+o.type = "sine"
+o.connect(context.destination)
+o.start()
