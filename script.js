@@ -1,7 +1,7 @@
 // Fonction pour obtenir la référence de l'élément d'entrée de texte et du bouton
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
-const TONE_LENGTH_MS = 50; // Remplacez 50 par la durée en millisecondes que l'on souhaite
+const TONE_LENGTH_MS = 500; // Remplacez 50 par la durée en millisecondes que l'on souhaite
 
 
 // Écouteur d'événement pour le bouton
@@ -14,22 +14,34 @@ function sendTextAsSound(text) {
     const START_FREQ = 1024;
     const STEP_FREQ = (text.length <= 4) ? 256 : 16; // Exemple pour 4 bits ou 8 bits
     const END_FREQ = 8192;
+    const tones = [];
 
-    // Emettre le ton de début
-    playTone(START_FREQ, TONE_LENGTH_MS);
-
-    // Convertir chaque caractère en ton
+    // Créer un tableau de fréquences pour chaque caractère
     for (let i = 0; i < text.length; i++) {
         const charCode = text.charCodeAt(i);
         const freq = START_FREQ + (charCode * STEP_FREQ);
-        playTone(freq, TONE_LENGTH_MS);
+        tones.push(freq);
     }
 
-    // Emettre le ton de fin
-    setTimeout(() => {
-        playTone(END_FREQ, TONE_LENGTH_MS);
-    }, TONE_LENGTH_MS * 2);
+    // Fonction récursive pour jouer les tonalités une par une
+    function playTonesSequentially(index) {
+        if (index < tones.length) {
+            playTone(tones[index], TONE_LENGTH_MS);
+            setTimeout(() => {
+                playTonesSequentially(index + 1); // Jouer la tonalité suivante après TONE_LENGTH_MS
+            }, TONE_LENGTH_MS);
+        } else {
+            // Toutes les tonalités ont été jouées, émettre le ton de fin
+            setTimeout(() => {
+                playTone(END_FREQ, TONE_LENGTH_MS);
+            }, TONE_LENGTH_MS);
+        }
+    }
+
+    // Démarrer la séquence de tonalités
+    playTonesSequentially(0);
 }
+
 
 function playTone(freq, duration) {
     // Fonction pour jouer un ton à une fréquence et durée spécifiées
