@@ -1,21 +1,47 @@
-<!DOCTYPE html>
-<html>
+/* style.css */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
 
-<head>
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>Wave</title>
-</head>
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
 
-<body>
-  <h1>Communication par Son</h1>
-  <input type="text" id="text-input" placeholder="Tapez quelque chose" />
-  <button id="send-sound">Convertir et jouer le son</button>
-  
-  <script type="text/javascript" src="script.js"></script>
-</body>
+input[type="text"] {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 300px;
+  box-sizing: border-box;
+}
 
-</html>
+button {
+  padding: 10px 20px;
+  background-color: #5c6bc0;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
 
+button:hover {
+  background-color: #3f51b5;
+}
 
+@media (max-width: 600px) {
+  input[type="text"],
+  button {
+    width: 80%;
+  }
+}
