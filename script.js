@@ -1,7 +1,7 @@
 // Fonction pour obtenir la référence de l'élément d'entrée de texte et du bouton
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
-const TONE_LENGTH_MS = 1000; // Remplacez 50 par la durée en millisecondes que l'on souhaite
+const TONE_LENGTH_MS = 250; // Remplacez 50 par la durée en millisecondes que l'on souhaite
 const ADDITIONAL_DELAY_MS=500 // délais de départ
 
 
@@ -17,7 +17,7 @@ function sendTextAsSound(text) {
     const END_FREQ = 8192;
     const tones = [];
 
-    // Créer un tableau de fréquences pour chaque caractère
+    
     // Créer un tableau de fréquences pour chaque caractère
     for (let i = 0; i < text.length; i++) {
         const charCode = text.charCodeAt(i);
