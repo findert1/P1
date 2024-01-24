@@ -1,47 +1,41 @@
-/* style.css */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
+<!DOCTYPE html>
+<html lang="fr">
 
-h1 {
-  color: #333;
-  margin-bottom: 20px;
-}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communication par Son</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
 
-input[type="text"] {
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 300px;
-  box-sizing: border-box;
-}
+<body>
+    <header>
+        <h1>Communication par Son</h1>
+    </header>
 
-button {
-  padding: 10px 20px;
-  background-color: #5c6bc0;
-  border: none;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+    <main>
+        <section>
+            <h2>Envoyer un Message</h2>
+            <input type="text" id="text-input" placeholder="Tapez quelque chose">
+            <button id="send-sound">Convertir et jouer le son</button>
+        </section>
 
-button:hover {
-  background-color: #3f51b5;
-}
+        <section>
+            <h2>À propos des auteurs</h2>
+            <p>Ce projet a été développé par Guillaume Lincot et Thomas Boulineau</p>
+        </section>
 
-@media (max-width: 600px) {
-  input[type="text"],
-  button {
-    width: 80%;
-  }
-}
+        <section>
+            <h2>Informations sur le Projet</h2>
+            <p>Ce projet vise à explorer les possibilités de communication via des ondes sonores, en utilisant des technologies web modernes.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Guillaume Lincot et Thomas Boulineau. Tous droits réservés.</p>
+    </footer>
+
+    <script type="text/javascript" src="script.js"></script>
+</body>
+
+</html>
