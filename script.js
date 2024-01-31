@@ -90,6 +90,10 @@ function playTone(freq, duration) {
 document.addEventListener('DOMContentLoaded', () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
+    var register = new Array();
+    var index = 0;
+    const seuil = 150;
+    const indexFreqMin = 379;
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
@@ -105,10 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxFrequencyElement = document.getElementById('max-frequency');
         const maxFrequencyValueElement = document.getElementById('max-frequency-value');
 
-        const seuil = 230;
-
         const seuilElement = document.getElementById('seuil');
         seuilElement.textContent = `Seuil : ${seuil}`;
+        const freqMinElement = document.getElementById('freqMin');
+        freqMinElement.textContent = `Indice de fréquence minimale : ${indexFreqMin}`;
 
         function updateFrequencyData() {
           analyser.getByteFrequencyData(frequencyData);
@@ -121,10 +125,23 @@ document.addEventListener('DOMContentLoaded', () => {
           maxFrequencyElement.textContent = `Max Frequency: ${maxIndex}`;
           maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
 
-          if(frequencyData[maxIndex] > seuil){
-            var node = document.createElement('li');
-            node.appendChild(document.createTextNode(`${maxIndex}`));
-            document.querySelector('ul').appendChild(node);  
+          if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin ){
+            
+            if(index == 0){
+              register[index] = maxIndex;
+              var node = document.createElement('li');
+              node.appendChild(document.createTextNode(`${index}: ${maxIndex}`));
+              document.querySelector('ul').appendChild(node);
+              index++;
+            }else{
+              if(register[index] != maxIndex){
+                index++;
+                register[index]=maxIndex;
+                var node = document.createElement('li');
+                node.appendChild(document.createTextNode(`${index}: ${maxIndex}`));
+                document.querySelector('ul').appendChild(node);
+              }
+            }
           }
           
           // Schedule the next update
