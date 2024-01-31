@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin ){
-            
+            // Pour le premier élément reçu
             if(index == 0){
               register[index] = maxIndex;
               var node = document.createElement('li');
@@ -146,18 +146,23 @@ document.addEventListener('DOMContentLoaded', () => {
               document.querySelector('ul').appendChild(node);
               index++;
             }else{
-              if(register[index] != maxIndex){
-                index++;
+              // Pour tous les autres éléments reçus
+              if(register[index-1] != maxIndex){
                 register[index]=maxIndex;
                 var node = document.createElement('li');
                 node.appendChild(document.createTextNode(`${index}: ${maxIndex}`));
                 document.querySelector('ul').appendChild(node);
+                index++;
               }
             }
           }
           
           // Schedule the next update
-          requestAnimationFrame(updateFrequencyData);
+          // Condition pour savoir quand la transmission est terminée
+          if(maxIndex!=2900){
+            requestAnimationFrame(updateFrequencyData);
+          }
+          
         }
 
         document.getElementById('start-button').addEventListener('click', () => {
