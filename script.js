@@ -13,7 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const frequencyData = new Uint8Array(bufferLength);
 
         // Get the reference to the HTML element where you want to display the max frequency value
+        const maxFrequencyElement = document.getElementById('max-frequency');
         const maxFrequencyValueElement = document.getElementById('max-frequency-value');
+
+        const seuil = 230;
+
+        const seuilElement = document.getElementById('seuil');
+        seuilElement.textContent = `Seuil : ${seuil}`;
 
         function updateFrequencyData() {
           analyser.getByteFrequencyData(frequencyData);
@@ -23,8 +29,15 @@ document.addEventListener('DOMContentLoaded', () => {
           const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
 
           // Display the value on the page
-          maxFrequencyValueElement.textContent = `Max Frequency Value: ${maxIndex}`;
+          maxFrequencyElement.textContent = `Max Frequency: ${maxIndex}`;
+          maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
 
+          if(frequencyData[maxIndex] > seuil){
+            var node = document.createElement('li');
+            node.appendChild(document.createTextNode(`${maxIndex}`));
+            document.querySelector('ul').appendChild(node);  
+          }
+          
           // Schedule the next update
           requestAnimationFrame(updateFrequencyData);
         }
