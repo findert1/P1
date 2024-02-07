@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if((register[index-1] - marge >= maxIndex || register[index-1] + marge <= maxIndex) && maxIndex != indexFreqMax){
                 register[index]=maxIndex;
                 var node = document.createElement('li');
-                var lettre = integerToChar((maxIndex-freqA)/(freqZ-freqA));
+                var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*25);
                 node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
                 document.querySelector('ul').appendChild(node);
                 index++;
