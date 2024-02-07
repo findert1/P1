@@ -147,15 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // Réinitialisation de la liste et du tableau quand on a la fréquence du début
 
-          if(maxIndex==indexFreqMin){
-            index = 0;
-            register = new Array();
-            var ulElement = document.querySelector('ul');
-            while (ulElement.firstChild) {
-                ulElement.removeChild(ulElement.firstChild);
-            }
-
-          }
+          
 
           if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin ){
             // Pour le premier élément reçu
@@ -202,6 +194,15 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch((error) => {
         console.error('Error accessing microphone:', error);
+      });
+
+      document.getElementById('reset-button').addEventListener('click', () => {
+        index = 0;
+        register = new Array();
+        var ulElement = document.querySelector('ul');
+        while (ulElement.firstChild) {
+            ulElement.removeChild(ulElement.firstChild);
+        }
       });
 });
 
