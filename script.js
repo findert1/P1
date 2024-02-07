@@ -88,8 +88,8 @@ function playTone(freq, duration) {
 }
 
 function integerToChar(integer) {
-  if (integer >= 32 && integer <= 127) {
-      return String.fromCharCode('a'.charCodeAt(0) + integer);
+  if (integer >= 0 && integer <= 127-32) {
+      return String.fromCharCode(' '.charCodeAt(0) + integer);
   } else {
       return "Entier hors de la plage [32, 127]";
   }
@@ -105,8 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const seuil = 100;
     const indexFreqMin = 380;
     const indexFreqMax = 2900;
-    const freqA = 957;
-    const freqZ = 1105;
+    const freqA = 570;
+    const freqZ = 1129;
     const marge = 2; // diffénrece de fréquences entre 2 lettres
 
     navigator.mediaDevices.getUserMedia({ audio: true })
