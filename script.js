@@ -91,7 +91,7 @@ function integerToChar(integer) {
   if (integer >= 0 && integer <= 127-32) {
       return String.fromCharCode(' '.charCodeAt(0) + integer);
   } else {
-      return "Entier hors de la plage [32, 127]";
+      return '\0';
   }
 }
 
@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isListening = false;
     let animationFrameId;
     var register = new Array();
+    var result = new Array();
     var index = 0;
     const seuil = 100;
     const indexFreqMin = 380;
@@ -165,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
                 node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
                 document.querySelector('ul').appendChild(node);
+                result[index] = lettre;
                 index++;
               }
             }
@@ -189,6 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
             isListening = false;
             cancelAnimationFrame(animationFrameId); // Stop the animation frame
             console.log('AudioContext is now stopped.');
+
+            // affichage des éléments enregistrés dans le tableau 
+            document.getElementById("result").innerText = result.toString();
           }
         });
       })
@@ -199,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('reset-button').addEventListener('click', () => {
         index = 0;
         register = new Array();
+        result = new Array();
         var ulElement = document.querySelector('ul');
         while (ulElement.firstChild) {
             ulElement.removeChild(ulElement.firstChild);
