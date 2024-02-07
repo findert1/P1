@@ -88,6 +88,7 @@ function playTone(freq, duration) {
 }
 
 function integerToChar(integer) {
+  integer = Math.round(integer);
   if (integer >= 0 && integer <= 127-32) {
       return String.fromCharCode(' '.charCodeAt(0) + integer);
   } else {
@@ -104,7 +105,7 @@ function affichage(tab){ // faire en sorte que cette fonction retourne un string
       j++;
     }
   }
-  return chaine.toString();
+  return chaine.join("");
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -116,10 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
     var result = new Array();
     var index = 0;
     const seuil = 100;
-    const indexFreqMin = 380;
-    const indexFreqMax = 2900;
-    const freqA = 570; // correspond à l'espace
-    const freqZ = 1129; // correspond à la tilde
+    const indexFreqMin = 3724;
+    const indexFreqMax = 3819;
+    const freqA = 3962; // correspond à l'espace
+    const freqZ = 4660; // correspond à la tilde
     const marge = 2; // diffénrece de fréquences entre 2 lettres
 
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -148,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
           analyser.getByteFrequencyData(frequencyData);
 
           // mettre toutes les fréquences en-dessous de la fréquence min à 0
-          for(let i=0; i<indexFreqMin; i++){
+          for(let i=0; i<freqA-1; i++){
             frequencyData[i] = 0;
           }
 
@@ -167,8 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if(index == 0){
               register[index] = maxIndex;
               var node = document.createElement('li');
-              node.appendChild(document.createTextNode(`${index}: ${maxIndex}`));
+              var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
+              node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
               document.querySelector('ul').appendChild(node);
+              result[index] = lettre;
               index++;
             }else{
               // Pour tous les autres éléments reçus
