@@ -80,7 +80,7 @@ function actuallyPlayTone(freq, duration, callback) {
 }
 
 function integerToChar(integer) {
-  integer = Math.round(integer);
+  integer = Math.round(integer) -1;
   if (integer >= 0 && integer <= 127-32) {
       return String.fromCharCode(' '.charCodeAt(0) + integer);
   } else {
@@ -108,12 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
     var register = new Array();
     var result = new Array();
     var index = 0;
+    var indexLettre = 0;
     const seuil = 100;
     const indexFreqMin = 3724;
     const indexFreqMax = 3819;
     const freqA = 3962; // correspond à l'espace
     const freqZ = 4660; // correspond à la tilde
-    const marge = 2; // diffénrece de fréquences entre 2 lettres
+    const marge = 3; // diffénrece de fréquences entre 2 lettres
+    const longueur = 13; // combien de fois une lettre doit se répéter pour qu'on confirme bien que c'est elle
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
@@ -150,27 +152,44 @@ document.addEventListener('DOMContentLoaded', () => {
           const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
           maxFrequencyElement.textContent = `Max Frequency: ${maxIndex}`;
           maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
-          
+
           if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin ){
             // Pour le premier élément reçu
-            if(index == 0){
-              register[index] = maxIndex;
-              var node = document.createElement('li');
-              var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
-              node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
-              document.querySelector('ul').appendChild(node);
-              result[index] = lettre;
-              index++;
-            }else{
-              // Pour tous les autres éléments reçus
-              if((register[index-1] - marge >= maxIndex || register[index-1] + marge <= maxIndex) && maxIndex != indexFreqMax){
-                register[index]=maxIndex;
-                var node = document.createElement('li');
-                var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
-                node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
-                document.querySelector('ul').appendChild(node);
-                result[index] = lettre;
-                index++;
+            register[index] = maxIndex;
+            //var node = document.createElement('li');
+            //var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
+            //node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
+            //document.querySelector('ul').appendChild(node);
+            //result[index] = lettre;
+            index++;
+            // Pour tous les autres éléments reçus
+            // suppression des anciennes conditions d'enregistrement
+            //if((register[index-1] - marge >= maxIndex || register[index-1] + marge <= maxIndex) && maxIndex != indexFreqMax){
+              //}
+            // SSSSSTTTTTTTTTTTTTTTbbbbbbbbbbbbbbbmmmmmmmmmmmmmmmmmvvvvvvvvvvvvvvvvvuuuuuuuuuuuuu
+
+            // il faut compter le nombre de fois que l'entrée du tableau se répète à peu de choses près
+            if(index>longueur){
+              var derniers = register.slice(-longueur);
+
+              // vérification si on en a pas mal à suivre avec une certaine marge
+              if(derniers.indexOf(Math.max(...derniers)) <
+              derniers.indexOf(Math.min(...derniers)) + marge){
+                var lettreTemp = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
+                if(indexLettre != 0){
+                  if(result[indexLettre-1] != lettreTemp){
+                    result[indexLettre] = lettreTemp;
+                    console.log(result[indexLettre]);
+                    indexLettre ++;
+                    
+                  }
+                }else{
+                  result[indexLettre] = lettreTemp;
+                  console.log(result[indexLettre]);
+                  indexLettre ++;
+                  
+                }
+                
               }
             }
           }
@@ -178,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // Schedule the next update
           // Condition pour savoir quand la transmission est terminée
           //if(maxIndex!=indexFreqMax){
-            requestAnimationFrame(updateFrequencyData);
+          requestAnimationFrame(updateFrequencyData);
           //}
           
         }
@@ -206,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       document.getElementById('reset-button').addEventListener('click', () => {
         index = 0;
+        indexLettre = 0;
         register = new Array();
         result = new Array();
         var ulElement = document.querySelector('ul');
