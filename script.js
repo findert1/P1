@@ -1,10 +1,10 @@
-// Assurez-vous que l'audioContext est déclaré et accessible globalement
+
 let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
 const TONE_LENGTH_MS = 250;
-const ADDITIONAL_DELAY_MS = 1000;  // Augmentez si nécessaire pour vous assurer que le son de départ est joué
+const ADDITIONAL_DELAY_MS = 2000;  // Augmentez si nécessaire pour vous assurer que le son de départ est joué
 
 // Nouvelles fréquences
 const START_FREQ = 10024;
@@ -49,6 +49,18 @@ function playTonesSequentially(tones, index) {
 }
 
 function playTone(freq, duration, callback) {
+    // Vérifier l'état de l'`AudioContext` et le reprendre si nécessaire
+    if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            console.log('AudioContext activated just before playing the tone.');
+            actuallyPlayTone(freq, duration, callback);
+        });
+    } else {
+        actuallyPlayTone(freq, duration, callback);
+    }
+}
+
+function actuallyPlayTone(freq, duration, callback) {
     let oscillator = audioContext.createOscillator();
     let gainNode = audioContext.createGain();
 
@@ -60,9 +72,9 @@ function playTone(freq, duration, callback) {
     gainNode.connect(audioContext.destination);
 
     oscillator.start();
-    oscillator.stop(audioContext.currentTime + duration / 1000); // Arrêtez l'oscillateur après la durée spécifiée
+    oscillator.stop(audioContext.currentTime + duration / 1000);
 
-    if(callback) {
+    if (callback) {
         setTimeout(callback, duration);
     }
 }
