@@ -88,16 +88,18 @@ function playTone(freq, duration) {
 }
 
 function integerToChar(integer) {
-  if (integer >= 0 && integer <= 25) {
+  if (integer >= 32 && integer <= 127) {
       return String.fromCharCode('a'.charCodeAt(0) + integer);
   } else {
-      return "Entier hors de la plage [0, 25]";
+      return "Entier hors de la plage [32, 127]";
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
+    let isListening = false;
+    let animationFrameId;
     var register = new Array();
     var index = 0;
     const seuil = 100;
@@ -168,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if((register[index-1] - marge >= maxIndex || register[index-1] + marge <= maxIndex) && maxIndex != indexFreqMax){
                 register[index]=maxIndex;
                 var node = document.createElement('li');
-                var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*25);
+                var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
                 node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
                 document.querySelector('ul').appendChild(node);
                 index++;
