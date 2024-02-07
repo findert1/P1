@@ -138,11 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
           maxFrequencyElement.textContent = `Max Frequency: ${maxIndex}`;
           maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
-
-          // Réinitialisation de la liste et du tableau quand on a la fréquence du début
-
           
-
           if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin ){
             // Pour le premier élément reçu
             if(index == 0){
