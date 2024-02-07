@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const seuil = 100;
     const indexFreqMin = 380;
     const indexFreqMax = 2900;
+    const marge = 2; // diffénrece de fréquences entre 2 lettres
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
@@ -119,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
           analyser.getByteFrequencyData(frequencyData);
 
           // mettre toutes les fréquences en-dessous de la fréquence min à 0
-
           for(let i=0; i<indexFreqMin; i++){
             frequencyData[i] = 0;
           }
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if(maxIndex==indexFreqMin){
             index = 0;
-            register = new Array;
+            register = new Array();
             var ulElement = document.querySelector('ul');
             while (ulElement.firstChild) {
                 ulElement.removeChild(ulElement.firstChild);
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
               index++;
             }else{
               // Pour tous les autres éléments reçus
-              if(register[index-1] != maxIndex && maxIndex != indexFreqMax){
+              if((register[index-1] - marge >= maxIndex || register[index-1] + marge <= maxIndex) && maxIndex != indexFreqMax){
                 register[index]=maxIndex;
                 var node = document.createElement('li');
                 node.appendChild(document.createTextNode(`${index}: ${maxIndex}`));
@@ -166,9 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
           
           // Schedule the next update
           // Condition pour savoir quand la transmission est terminée
-          if(maxIndex!=indexFreqMax){
+          //if(maxIndex!=indexFreqMax){
             requestAnimationFrame(updateFrequencyData);
-          }
+          //}
           
         }
 
