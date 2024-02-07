@@ -1,7 +1,7 @@
 // Fonction pour obtenir la référence de l'élément d'entrée de texte et du bouton
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
-const TONE_LENGTH_MS = 500; // Remplacez 50 par la durée en millisecondes que l'on souhaite
+const TONE_LENGTH_MS = 200; // Remplacez 50 par la durée en millisecondes que l'on souhaite
 const ADDITIONAL_DELAY_MS=500 // délais de départ
 
 
@@ -95,6 +95,18 @@ function integerToChar(integer) {
   }
 }
 
+function affichage(tab){ // faire en sorte que cette fonction retourne un string propre
+  let chaine = new Array();
+  let j=0;
+  for(let i=0; i<tab.length; i++){
+    if (tab[i] != '\0'){
+      chaine[j] = tab[i];
+      j++;
+    }
+  }
+  return chaine.toString();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
@@ -106,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const seuil = 100;
     const indexFreqMin = 380;
     const indexFreqMax = 2900;
-    const freqA = 570;
-    const freqZ = 1129;
+    const freqA = 570; // correspond à l'espace
+    const freqZ = 1129; // correspond à la tilde
     const marge = 2; // diffénrece de fréquences entre 2 lettres
 
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -193,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('AudioContext is now stopped.');
 
             // affichage des éléments enregistrés dans le tableau 
-            document.getElementById("result").innerText = result.toString();
+            document.getElementById("result").innerText = affichage(result);
           }
         });
       })
