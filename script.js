@@ -2,7 +2,7 @@
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
 const TONE_LENGTH_MS = 500; // Remplacez 50 par la durée en millisecondes que l'on souhaite
-const ADDITIONAL_DELAY_MS=500 // délais de départ
+const ADDITIONAL_DELAY_MS=500; // délais de départ
 
 
 // Écouteur d'événement pour le bouton
@@ -90,10 +90,11 @@ function playTone(freq, duration) {
 document.addEventListener('DOMContentLoaded', () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
-    var register = new Array();
+    var register = new Array(); // tableau dans lequel on enregistre les fréquences
     var index = 0;
-    const seuil = 100;
+    const seuil = 70;
     const indexFreqMin = 380;
+    const marge = 2;
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
@@ -108,7 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get the reference to the HTML element where you want to display the max frequency value
         const maxFrequencyElement = document.getElementById('max-frequency');
         const maxFrequencyValueElement = document.getElementById('max-frequency-value');
-
+        
+        // affichage des paramètres d'acquisition sur la page
         const seuilElement = document.getElementById('seuil');
         seuilElement.textContent = `Seuil : ${seuil}`;
         const freqMinElement = document.getElementById('freqMin');
@@ -117,6 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
         function updateFrequencyData() {
           analyser.getByteFrequencyData(frequencyData);
 
+          // supprimer toutes les fréquences en dessous de la fréquence minimale
+          for(var i=0; i<indexFreqMin; i++){
+            frequencyData[i] = 0;
+          }
+
           // Find the index of the maximum value in the frequencyData array
 
           const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
@@ -124,6 +131,34 @@ document.addEventListener('DOMContentLoaded', () => {
           // Display the value on the page
           maxFrequencyElement.textContent = `Max Frequency: ${maxIndex}`;
           maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
+
+          // affichage du diagramme 
+          var data = {
+            datasets: [{
+                label: 'Fréquences',
+                data: frequencyData,
+                borderWidth: 1
+            }]
+          };
+
+          // Configuration du graphique
+          var config = {
+              type: 'bar',
+              data: data,
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  }
+              },
+          };
+
+          // Créer un nouveau graphique avec la configuration spécifiée
+          var myChart = new Chart(
+              document.getElementById('myChart'),
+              config
+          );
 
           // Réinitialisation de la liste et du tableau quand on a la fréquence du début
 
@@ -137,7 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
           }
 
-          if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin ){
+          if(frequencyData[maxIndex] >= seuil //&& maxIndex>indexFreqMin 
+            ){
             // Pour le premier élément reçu
             if(index == 0){
               register[index] = maxIndex;
@@ -147,7 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
               index++;
             }else{
               // Pour tous les autres éléments reçus
-              if(register[index-1] != maxIndex){
+              if(register[index-1] <= maxIndex - marge
+                || register[index-1 >= maxIndex + marge]){
                 register[index]=maxIndex;
                 var node = document.createElement('li');
                 node.appendChild(document.createTextNode(`${index}: ${maxIndex}`));
