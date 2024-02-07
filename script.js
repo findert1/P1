@@ -87,6 +87,14 @@ function playTone(freq, duration) {
     }, duration);
 }
 
+function integerToChar(integer) {
+  if (integer >= 0 && integer <= 25) {
+      return String.fromCharCode('a'.charCodeAt(0) + integer);
+  } else {
+      return "Entier hors de la plage [0, 25]";
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
@@ -95,6 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const seuil = 100;
     const indexFreqMin = 380;
     const indexFreqMax = 2900;
+    const freqA = 957;
+    const freqZ = 1105;
     const marge = 2; // diffénrece de fréquences entre 2 lettres
 
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -157,7 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
               if((register[index-1] - marge >= maxIndex || register[index-1] + marge <= maxIndex) && maxIndex != indexFreqMax){
                 register[index]=maxIndex;
                 var node = document.createElement('li');
-                node.appendChild(document.createTextNode(`${index}: ${maxIndex}`));
+                var lettre = integerToChar((maxIndex-freqA)/(freqZ-freqA));
+                node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
                 document.querySelector('ul').appendChild(node);
                 index++;
               }
