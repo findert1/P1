@@ -1,7 +1,7 @@
 // Fonction pour obtenir la référence de l'élément d'entrée de texte et du bouton
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
-const TONE_LENGTH_MS = 250; // Remplacez 50 par la durée en millisecondes que l'on souhaite
+const TONE_LENGTH_MS = 500; // Remplacez 50 par la durée en millisecondes que l'on souhaite
 const ADDITIONAL_DELAY_MS=500 // délais de départ
 
 
@@ -86,12 +86,26 @@ function playTone(freq, duration) {
         audioContext.close(); // Fermer le contexte audio après avoir joué le son
     }, duration);
 }
-// ecoute 
+
+function integerToChar(integer) {
+  if (integer >= 0 && integer <= 25) {
+      return String.fromCharCode('a'.charCodeAt(0) + integer);
+  } else {
+      return "Entier hors de la plage [0, 25]";
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
-    let isListening = false;
-    let animationFrameId;
+    var register = new Array();
+    var index = 0;
+    const seuil = 100;
+    const indexFreqMin = 380;
+    const indexFreqMax = 2900;
+    const freqA = 957;
+    const freqZ = 1105;
+    const marge = 2; // diffénrece de fréquences entre 2 lettres
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
@@ -106,26 +120,68 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get the reference to the HTML elements
         const maxFrequencyElement = document.getElementById('max-frequency');
         const maxFrequencyValueElement = document.getElementById('max-frequency-value');
-        const seuil = 230;
+
         const seuilElement = document.getElementById('seuil');
         seuilElement.textContent = `Seuil : ${seuil}`;
+        const freqMinElement = document.getElementById('freqMin');
+        freqMinElement.textContent = `Indice de fréquence minimale : ${indexFreqMin}`;
 
         function updateFrequencyData() {
           if (!isListening) {
             return; // Stop updating when not listening
           }
           analyser.getByteFrequencyData(frequencyData);
+
+          // mettre toutes les fréquences en-dessous de la fréquence min à 0
+          for(let i=0; i<indexFreqMin; i++){
+            frequencyData[i] = 0;
+          }
+
+          // Find the index of the maximum value in the frequencyData array
+
           const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
           maxFrequencyElement.textContent = `Max Frequency: ${maxIndex}`;
           maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
 
-          if(frequencyData[maxIndex] > seuil){
-            var node = document.createElement('li');
-            node.appendChild(document.createTextNode(`${maxIndex}`));
-            document.querySelector('ul').appendChild(node);  
+          // Réinitialisation de la liste et du tableau quand on a la fréquence du début
+
+          if(maxIndex==indexFreqMin){
+            index = 0;
+            register = new Array();
+            var ulElement = document.querySelector('ul');
+            while (ulElement.firstChild) {
+                ulElement.removeChild(ulElement.firstChild);
+            }
+
           }
 
-          animationFrameId = requestAnimationFrame(updateFrequencyData);
+          if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin ){
+            // Pour le premier élément reçu
+            if(index == 0){
+              register[index] = maxIndex;
+              var node = document.createElement('li');
+              node.appendChild(document.createTextNode(`${index}: ${maxIndex}`));
+              document.querySelector('ul').appendChild(node);
+              index++;
+            }else{
+              // Pour tous les autres éléments reçus
+              if((register[index-1] - marge >= maxIndex || register[index-1] + marge <= maxIndex) && maxIndex != indexFreqMax){
+                register[index]=maxIndex;
+                var node = document.createElement('li');
+                var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*25);
+                node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
+                document.querySelector('ul').appendChild(node);
+                index++;
+              }
+            }
+          }
+          
+          // Schedule the next update
+          // Condition pour savoir quand la transmission est terminée
+          //if(maxIndex!=indexFreqMax){
+            requestAnimationFrame(updateFrequencyData);
+          //}
+          
         }
 
         document.getElementById('start-button').addEventListener('click', () => {
