@@ -4,36 +4,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Communication par Son</title>
+    <title>Communication par Onde sonores</title>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
   <header>
     <div class="header-text">
-        <h1>Communication par Son</h1>
+        <h1>Communication par Ondes sonores</h1>
     </div>
 </header>
 
   <main>
     <section>
       <h2>Décodeur</h2>
-      <section>
-        <h3>Analyse de fréquence</h3>
-        <button id='start-button'>Start/stop</button>
-        <button id='reset-button'>Reset</button>
-        <p id="max-frequency">Max frequency: </p>
-        <p id="max-frequency-value">Max frequency value: </p>
-      </section>
-      <section>
-        <h3>Fortes fréquences enregistrées:</h3>
-        <p id="seuil"></p>
-        <p id="freqMin"></p>
-        <ul id="liste">
-        </ul>
-        <h4>Résultat: </h4>
-        <p id="result">le résultat s'affichera ici</p>
-      </section>
+      
+        <section>
+            <h3>Analyse de fréquence</h3>
+            <button id='start-button'>Start/stop</button>
+            <button id='reset-button'>Reset</button>
+            <!-- Ajout du paragraphe explicatif avec la classe header-text -->
+            <p class="header-text">Utilisez le bouton "Start/stop" pour activer ou désactiver la capture de son. Le bouton "Reset" réinitialise le message.</p>
+            <p id="max-frequency">Max frequency: </p>
+            <p id="max-frequency-value">Max frequency value: </p>
+        </section>
+        <section>
+            <h3>Fortes fréquences enregistrées:</h3>
+            <p id="seuil"></p>
+            <p id="freqMin"></p>
+            <ul id="liste"></ul>
+            <h4>Résultat: </h4>
+            <p id="result">le résultat s'affichera ici</p>
+        </section>
+    </section>
+    
+      
+  </section>
     </section>
   </main>
 

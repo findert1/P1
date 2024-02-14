@@ -19,6 +19,11 @@ header {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+header img {
+    border-radius: 10px; /* ou la valeur que vous préférez pour l'arrondi des coins */
+}
+
+
 .header-text {
     display: inline-block;
     background-color: rgba(0, 0, 0, 0.7); /* Couleur du fond noir avec une opacité de 70% */
@@ -58,6 +63,22 @@ button {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
+
+/* Pour la partie décodeur */
+
+
+/* Style pour le texte sous les boutons */
+.header-text {
+    background-color: rgba(0, 0, 0, 0.7); /* Couleur du fond noir avec une opacité de 70% */
+    color: #fff; /* Couleur du texte */
+    padding: 8px 15px; /* Ajoutez un espacement autour du texte */
+    border-radius: 5px; /* Ajoutez des coins arrondis */
+    margin-top: 10px; /* Ajoutez une marge en haut */
+    display: inline-block; /* Permet au rectangle noir de s'ajuster à la taille du texte */
+}
+
+
+
 
 button:hover {
     background: #555;
