@@ -42,6 +42,7 @@ button {
     padding: 10px 20px;
     margin: 10px 0;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
@@ -56,6 +57,17 @@ footer {
     color: #fff;
 }
 
+footer a {
+    color: #fff; /* Couleur du texte pour qu'il ressorte sur le fond sombre du pied de page */
+    text-decoration: none; /* Optionnel : supprime le soulignement par défaut */
+}
+
+footer a:hover, footer a:focus {
+    text-decoration: underline; /* Ajoute un soulignement au survol ou à la sélection pour une meilleure visibilité */
+    color: #4CAF50; /* Change la couleur au survol pour une indication visuelle */
+}
+
+
 /* Entrée de texte */
 input[type="text"] {
     width: 100%;
@@ -65,6 +77,7 @@ input[type="text"] {
     border-radius: 5px;
     border: 1px solid #ddd;
     box-sizing: border-box;
+    border-color: #333;
 }
 
 /* Responsive design pour les écrans plus petits */
