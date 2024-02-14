@@ -109,13 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
     var result = new Array(); // mot de sortie
     var index = 0;
     var indexLettre = 0;
+    var indexChangement = 0; // pour repérer quand on change de fréquence
+    var lettreTemp = '';
+    var repetition = 0;
     const seuil = 100;
     const indexFreqMin = 3724;
     const indexFreqMax = 3819;
     const freqA = 3962; // correspond à l'espace
     const freqZ = 4660; // correspond à la tilde
     const marge = 3; // diffénrece de fréquences entre 2 lettres
-    const longueur = 13; // combien de fois une lettre doit se répéter pour qu'on confirme bien que c'est elle
+    const longueur = 7; // combien de fois une lettre doit se répéter pour qu'on confirme bien que c'est elle
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
@@ -148,67 +151,35 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           // Find the index of the maximum value in the frequencyData array
-
           const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
           maxFrequencyElement.textContent = `Max Frequency: ${maxIndex}`;
           maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
 
-          if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin ){
+          if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin){
             // Pour le premier élément reçu
             register[index] = maxIndex;
-            //var node = document.createElement('li');
-            //var lettre = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
-            //node.appendChild(document.createTextNode(`${index}: ${maxIndex}: ${lettre}`));
-            //document.querySelector('ul').appendChild(node);
-            //result[index] = lettre;
-            index++;
-            // Pour tous les autres éléments reçus
-            // suppression des anciennes conditions d'enregistrement
-            //if((register[index-1] - marge >= maxIndex || register[index-1] + marge <= maxIndex) && maxIndex != indexFreqMax){
-              //}
-            // SSSSSTTTTTTTTTTTTTTTbbbbbbbbbbbbbbbmmmmmmmmmmmmmmmmmvvvvvvvvvvvvvvvvvuuuuuuuuuuuuu
 
-            // il faut compter le nombre de fois que l'entrée du tableau se répète à peu de choses près
-            if(index>longueur){
-              var derniers = register.slice(-longueur);
-
-              // vérification si on en a pas mal à suivre avec une certaine marge
-              if(derniers.indexOf(Math.max(...derniers)) <
-              derniers.indexOf(Math.min(...derniers)) + marge){
-                var lettreTemp = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
-                if(indexLettre != 0){
-                  if(result[indexLettre-1] != lettreTemp){ // s'il s'agit d'une suite de deux caractères différents
+            // repérer lorsqu'on a un changement de fréquence
+            if(index>0){
+              if(register[index-1] < maxIndex-marge || register[index-1] > maxIndex+marge){ // changement
+                console.log("changement de fréquence détecté");
+                // calculer le temps entre les deux derniers changements de fréquence
+                if(index-indexChangement > longueur){
+                  repetition = Math.floor((index-indexChangement)/longueur);
+                  for(let i=0; i<repetition; i++){
+                    lettreTemp = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
                     result[indexLettre] = lettreTemp;
-                    console.log(result[indexLettre]);
+                    console.log(lettreTemp);
                     indexLettre ++;
-                  }else{ // s'il s'agit de deux fois le même caractère
-                    if(index>2*longueur && indexLettre>1){ 
-                      derniers = register.slice(-2*longueur);
-                      if(derniers.indexOf(Math.max(...derniers)) <
-                            derniers.indexOf(Math.min(...derniers)) + marge
-                            && lettreTemp != result[indexLettre-1] && lettreTemp != result[indexLettre-2]){
-                        var lettreTemp = istegerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
-                        result[indexLettre] = lettreTemp;
-                        console.log(result[indexLettre]);
-                        indexLettre ++;
-                      }
-                    }
                   }
-                }else{
-                  result[indexLettre] = lettreTemp;
-                  console.log(result[indexLettre]);
-                  indexLettre ++;
                 }
-                
+                indexChangement = index;
               }
             }
+            index++;
           }
-          
-          // Schedule the next update
-          // Condition pour savoir quand la transmission est terminée
-          //if(maxIndex!=indexFreqMax){
+
           requestAnimationFrame(updateFrequencyData);
-          //}
           
         }
 
@@ -236,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('reset-button').addEventListener('click', () => {
         index = 0;
         indexLettre = 0;
+        indexChangement = 0; 
         register = new Array();
         result = new Array();
         var ulElement = document.querySelector('ul');
