@@ -8,13 +8,27 @@ body {
     color: #333;
 }
 
-/* En-tête */
+/* Style pour le header */
 header {
-    background: #333;
-    color: #fff;
-    padding: 1rem 0;
+    background-image: url('Header2.png'); /* Ajoutez le chemin vers votre image */
+    background-size: cover; /* Assurez-vous que l'image de fond couvre tout l'en-tête */
+    background-position: center; /* Centrez l'image de fond */
+    color: #fff; /* Couleur du texte */
+    padding: 20px; /* Ajoutez un espace autour du texte */
     text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+.header-text {
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.7); /* Couleur du fond noir avec une opacité de 70% */
+    padding: 3px 20px; /* Ajoutez un espace à l'intérieur du rectangle noir */
+}
+
+
+
+
+
 
 /* Section principale */
 main {
