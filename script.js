@@ -1,5 +1,5 @@
 
-let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
@@ -9,7 +9,7 @@ const ADDITIONAL_DELAY_MS = 2000;  // Augmentez si nécessaire pour vous assurer
 // Nouvelles fréquences
 const START_FREQ = 10024;
 const END_FREQ = 17000;
-const STEP_FREQ = 20;
+const STEP_FREQ = 50;
 
 sendButton.addEventListener("click", function() {
     if(audioContext.state === "suspended") {
@@ -23,7 +23,7 @@ sendButton.addEventListener("click", function() {
 });
 
 function startSending() {
-    const textToEncode = textInput.value;
+    var textToEncode = textInput.value;
     // Introduisez un délai avant de commencer à envoyer
     setTimeout(() => sendTextAsSound(textToEncode), ADDITIONAL_DELAY_MS);
 }
@@ -79,13 +79,17 @@ function actuallyPlayTone(freq, duration, callback) {
     }
 }
 
-function integerToChar(integer) {
-  integer = Math.round(integer) -1;
+
+function integerToChar(integer) { // 0: ' ', 126: '~'
   if (integer >= 0 && integer <= 127-32) {
       return String.fromCharCode(' '.charCodeAt(0) + integer);
   } else {
       return '\0';
   }
+}
+
+function freqToChar(freq){
+  return String.fromCharCode(Math.floor((freq-START_FREQ)/STEP_FREQ));
 }
 
 function affichage(tab){ // faire en sorte que cette fonction retourne un string propre
@@ -100,35 +104,61 @@ function affichage(tab){ // faire en sorte que cette fonction retourne un string
   return chaine.join("");
 }
 
+var minFrequencyAnalyser;
+var maxFrequencyAnalyser;
+var frequencyWidthAnalyser;
+
+function getFrequencyAtIndex(index) {
+  return minFrequencyAnalyser + index * frequencyWidthAnalyser;
+}
+
+function getIndexAtFrequency(frequency) {
+  // Vérifier si la fréquence est dans la plage de fréquences de l'analyseur
+  if (frequency < minFrequencyAnalyser || frequency > maxFrequencyAnalyser) {
+      return -1; // La fréquence est hors de la plage de fréquences
+  }
+  // Calculer l'index correspondant
+  const index = Math.floor((frequency - minFrequencyAnalyser) / frequencyWidthAnalyser);
+  
+  return index;
+}
+
+
+
+var maxIndex;
+var maxFrequency;
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 16384;
+    const sampleRate = audioContext.sampleRate;
+    const bufferLength = analyser.frequencyBinCount;
+    minFrequencyAnalyser = 0;
+    maxFrequencyAnalyser = sampleRate / 2; 
+    frequencyWidthAnalyser = (maxFrequencyAnalyser - minFrequencyAnalyser) / bufferLength;
+    const frequencyData = new Uint8Array(bufferLength);
+
+
     let isListening = false;
     let animationFrameId;
     var register = new Array(); // enregistrement des fréquences
     var result = new Array(); // mot de sortie
     var index = 0;
     var indexLettre = 0;
-    var indexChangement = 0; // pour repérer quand on change de fréquence
-    var lettreTemp = '';
     var repetition = 0;
-    const seuil = 100;
-    const indexFreqMin = 3724;
-    const indexFreqMax = 3819;
-    const freqA = 3962; // correspond à l'espace
-    const freqZ = 4660; // correspond à la tilde
-    const marge = 3; // diffénrece de fréquences entre 2 lettres
-    const longueur = 7; // combien de fois une lettre doit se répéter pour qu'on confirme bien que c'est elle
+    const seuil = 120;
+    const longueur = 175; // combien de fois une lettre doit se répéter pour qu'on confirme bien que c'est elle
+    const retour = 4; // de combien on doit retourner en arrière dans register pour être sûr que c'est la bonne lettre au changement de fréquence
+    var temps = 0;
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
         const source = audioContext.createMediaStreamSource(stream);
         source.connect(analyser);
         //analyser.connect(audioContext.destination);
-        analyser.fftSize = 16384;
-
-        const bufferLength = analyser.frequencyBinCount;
-        const frequencyData = new Uint8Array(bufferLength);
 
         // Get the reference to the HTML elements
         const maxFrequencyElement = document.getElementById('max-frequency');
@@ -137,51 +167,59 @@ document.addEventListener('DOMContentLoaded', () => {
         const seuilElement = document.getElementById('seuil');
         seuilElement.textContent = `Seuil : ${seuil}`;
         const freqMinElement = document.getElementById('freqMin');
-        freqMinElement.textContent = `Indice de fréquence minimale : ${indexFreqMin}`;
+        freqMinElement.textContent = `Fréquence minimale : ${START_FREQ}`;
 
         function updateFrequencyData() {
           if (!isListening) {
             return; // Stop updating when not listening
           }
           analyser.getByteFrequencyData(frequencyData);
-
-          // mettre toutes les fréquences en-dessous de la fréquence min à 0
-          for(let i=0; i<freqA-1; i++){
+        
+          // Mettre toutes les fréquences en-dessous de la fréquence min à 0
+          for(let i=0; i<getIndexAtFrequency(START_FREQ); i++){
             frequencyData[i] = 0;
           }
-
+        
           // Find the index of the maximum value in the frequencyData array
-          const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
-          maxFrequencyElement.textContent = `Max Frequency: ${maxIndex}`;
+          maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
+          maxFrequency = getFrequencyAtIndex(maxIndex);
+          maxFrequencyElement.textContent = `Max Frequency: ${maxFrequency}`;
           maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
-
-          if(frequencyData[maxIndex] >= seuil && maxIndex>indexFreqMin){
+        
+          if(frequencyData[maxIndex] >= seuil){ // Si le son capté est assez fort
             // Pour le premier élément reçu
             register[index] = maxIndex;
-
+        
             // repérer lorsqu'on a un changement de fréquence
             if(index>0){
-              if(register[index-1] < maxIndex-marge || register[index-1] > maxIndex+marge){ // changement
-                console.log("changement de fréquence détecté");
+              if(getFrequencyAtIndex(register[index-1]) < getFrequencyAtIndex(maxIndex)-STEP_FREQ*0.9 || 
+              getFrequencyAtIndex(register[index-1]) > getFrequencyAtIndex(maxIndex)+STEP_FREQ*0.9){ // changement
+                if(temps==0) temps = performance.now();
+                let tempsfin = performance.now();
+                //console.log("changement de fréquence détecté");
                 // calculer le temps entre les deux derniers changements de fréquence
-                if(index-indexChangement > longueur){
-                  repetition = Math.floor((index-indexChangement)/longueur);
+                if(tempsfin-temps > longueur){
+                  repetition = Math.floor((tempsfin-temps)/longueur);
+                  //console.log(tempsfin-temps);
                   for(let i=0; i<repetition; i++){
-                    lettreTemp = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
+                    lettreTemp = freqToChar(getFrequencyAtIndex(register[index-retour]));
                     result[indexLettre] = lettreTemp;
                     console.log(lettreTemp);
-                    indexLettre ++;
+                    indexLettre++;
                   }
                 }
-                indexChangement = index;
+                temps = tempsfin;
               }
             }
             index++;
           }
-
+        
+          //recommencer en boucle
+           
           requestAnimationFrame(updateFrequencyData);
           
         }
+        
 
         document.getElementById('start-button').addEventListener('click', () => {
           if (!isListening) {
@@ -210,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         indexChangement = 0; 
         register = new Array();
         result = new Array();
+        temps = 0;
         var ulElement = document.querySelector('ul');
         while (ulElement.firstChild) {
             ulElement.removeChild(ulElement.firstChild);
