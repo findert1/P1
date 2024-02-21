@@ -3,13 +3,13 @@ var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
-const TONE_LENGTH_MS = 250;
+const TONE_LENGTH_MS = 350;
 const ADDITIONAL_DELAY_MS = 2000;  // Augmentez si nécessaire pour vous assurer que le son de départ est joué
 
 // Nouvelles fréquences
-const START_FREQ = 10024;
+const START_FREQ = 5000;
 const END_FREQ = 17000;
-const STEP_FREQ = 50;
+const STEP_FREQ = 60;
 
 sendButton.addEventListener("click", function() {
     if(audioContext.state === "suspended") {
@@ -81,15 +81,15 @@ function actuallyPlayTone(freq, duration, callback) {
 
 
 function integerToChar(integer) { // 0: ' ', 126: '~'
-  if (integer >= 0 && integer <= 127-32) {
+  //if (integer >= 0 && integer <= 127-32) {
       return String.fromCharCode(' '.charCodeAt(0) + integer);
-  } else {
-      return '\0';
-  }
+  //} else {
+  //    return '\0';
+  //}
 }
 
 function freqToChar(freq){
-  return String.fromCharCode(Math.floor((freq-START_FREQ)/STEP_FREQ));
+  return String.fromCharCode(Math.round((freq-START_FREQ)/STEP_FREQ));
 }
 
 function affichage(tab){ // faire en sorte que cette fonction retourne un string propre
@@ -118,7 +118,7 @@ function getIndexAtFrequency(frequency) {
       return -1; // La fréquence est hors de la plage de fréquences
   }
   // Calculer l'index correspondant
-  const index = Math.floor((frequency - minFrequencyAnalyser) / frequencyWidthAnalyser);
+  const index = Math.round((frequency - minFrequencyAnalyser) / frequencyWidthAnalyser);
   
   return index;
 }
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var indexLettre = 0;
     var repetition = 0;
     const seuil = 120;
-    const longueur = 175; // combien de fois une lettre doit se répéter pour qu'on confirme bien que c'est elle
+    const longueur = 300; // longueur pour laquelle on considère que c'est une lettre
     const retour = 4; // de combien on doit retourner en arrière dans register pour être sûr que c'est la bonne lettre au changement de fréquence
     var temps = 0;
 
@@ -215,7 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         
           //recommencer en boucle
-           
           requestAnimationFrame(updateFrequencyData);
           
         }
