@@ -14,7 +14,7 @@
     <a href="#" onclick="closeNav()">Accueil</a>
     <a href="#decodeur" onclick="closeNav()">Décodeur</a>
     <a href="#message" onclick="closeNav()">Envoyer un Message</a>
-    <a href="à_propo.html" target="_blank"> Description</a>
+    <a href="à_propo.html" target="_blank" onclick="closeNav()"> Description</a>
     <a href="#contact" onclick="closeNav()">Contact</a>
 </div>
 <div id="main">
@@ -56,12 +56,22 @@
   </main>
 
     <main>
-        <section>
-        <section>
-            <h2 id="message" class="lien-interne">Envoyer un Message</h2>
-            <input type="text" id="text-input" placeholder="Tapez quelque chose">
-            <button id="send-sound">Convertir et jouer le son</button>
-        </section>
+        
+      
+      <div class="container">
+        <div class="section-content">
+          <h2 id="message" class="lien-interne">Envoyer un Message</h2>
+          <input type="text" id="text-input" placeholder="Tapez quelque chose">
+          <button id="send-sound">Convertir et jouer le son</button>
+          <!-- Autre contenu de la section -->
+        </div>
+        <div class="pub">
+          <img src="pub micro.jpg" alt="Publicité" style="width: 300px; height: auto;">
+        </div>
+      </div>
+      
+      
+      
 
         <section>
             <h2>À propos des auteurs</h2>
@@ -76,9 +86,10 @@
     </section>
     </body>
 
-    <footer id="contact" class="lien-interne">
-      <p>&copy; 2024 Guillaume Lincot et Thomas Boulineau. Tous droits réservés.</p>
-      <!-- Lien vers le projet GitHub -->
+    <footer id="contact" class="footer-a-propos " class="lien-interne">
+      <p>&copy; 2024 <a href="mailto:guillaume.lincot@etud.univ-angers.fr">Guillaume Lincot</a> et <a href="mailto:thomas.boulineau@etud.univ-angers.fr">
+        Thomas Boulineau</a>. Tous droits réservés.</p>
+         <!-- Lien vers le projet GitHub -->
       <p>Consultez notre projet sur <a href="https://github.com/findert1/P1" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
   </footer>
   

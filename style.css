@@ -10,7 +10,7 @@ body {
 
 /* Style pour le header */
 header {
-    background-image: url('Header2.png'); /* Ajoutez le chemin vers votre image */
+    background-image: url('nv\ header.jpg'); /* Ajoutez le chemin vers votre image */
     background-size: cover; /* Assurez-vous que l'image de fond couvre tout l'en-tête */
     background-position: center; /* Centrez l'image de fond */
     color: #fff; /* Couleur du texte */
@@ -119,6 +119,32 @@ input[type="text"] {
     box-sizing: border-box;
     border-color: #333;
 }
+/* partie pub*/
+
+/* CSS pour la section et l'image */
+.container {
+  display: flex;
+  justify-content: space-between; /* Sépare le contenu et la pub */
+  align-items: flex-start; /* Aligner les éléments en haut */
+}
+
+.section-content {
+  flex: 1; /* Permet à la section de prendre l'espace nécessaire */
+  padding-right: 20px; /* Ajoute un peu d'espace entre la section et la pub */
+  width: calc(100% - 300px);
+}
+
+.pub {
+  
+  width: 250px; 
+  height: auto; /* Maintient le ratio de l'image */
+  /*margin-left: 20px; /* Espace entre l'image et la section */
+  flex-basis: 300px; /* Largeur de l'image de pub, ajustez selon vos besoins */
+ 
+  max-width: 100%; /* S'assure que l'image ne dépasse pas sa boîte */
+}
+
+
 
 /* Responsive design pour les écrans plus petits */
 @media (max-width: 600px) {
