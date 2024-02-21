@@ -1,10 +1,12 @@
+// faire en sorte d'envoyer 2 bits par 2 bits car trop d'harmoniques
+
 // partie commune
 
 let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-const DELAI_DEMARRAGE = 2000;
-const FREQ_LSB = 5000;
-const STEP = 100;
+const DELAI_DEMARRAGE = 1000;
+const FREQ_LSB = 3000;
+const STEP = 333;
 const DURATION = 0.5;
 
 // partie envoi
@@ -38,10 +40,13 @@ document.getElementById("send-sound").addEventListener("click", function() {
 
 function processText(){
     let text = document.getElementById("text-input").value;
+    console.log(text);
     let startTime = audioContext.currentTime;
+    createMultiSineWave(charToFrequencies(String.fromCharCode(2)), startTime);
     for(let i=0; i<text.length; i++){
-        createMultiSineWave(charToFrequencies(text[i]), startTime + i*DURATION);
+        createMultiSineWave(charToFrequencies(text[i]), startTime + (i+1)*DURATION);
     }
+    createMultiSineWave(charToFrequencies(String.fromCharCode(3)), startTime + (text.length+1)*DURATION);
 }
 
 function charToFrequencies(character){
@@ -64,22 +69,24 @@ let minFrequencyAnalyser;
 let frequencyWidthAnalyser;
 let frequencyData;
 let frequencies = [];
-let seuil = 100;
+let seuil = 180;
 
-for(let i=0; i<8; i++){
+for(let i=0; i<4; i++){
     frequencies[i] = FREQ_LSB + i*STEP;
 }
 
 
 document.addEventListener('DOMContentLoaded', () =>{
     let analyser = audioContext.createAnalyser();
-    // analyser.fftSize = ...; à voir si on met quelque chose ici
+    //analyser.fftSize = 16384; 
     let sampleRate = audioContext.sampleRate;
     let bufferLength = analyser.frequencyBinCount;
     minFrequencyAnalyser = 0;
     maxFrequencyAnalyser = sampleRate / 2; 
     frequencyWidthAnalyser = (maxFrequencyAnalyser - minFrequencyAnalyser) / bufferLength;
     frequencyData = new Uint8Array(bufferLength);
+
+    let isListening = false;
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then((stream) => {
@@ -91,9 +98,28 @@ document.addEventListener('DOMContentLoaded', () =>{
               return; 
             }
             analyser.getByteFrequencyData(frequencyData);
-            console.log(processFrequencies());
-            requestAnimationFrame(updateFrequencyData);
+            console.log(frequencyData);
+            let car = processFrequencies();
+            if(car != '\0') console.log(processFrequencies());
+            setTimeout(updateFrequencyData, 500);;
         }
+
+        document.getElementById('start-button').addEventListener('click', () => {
+            if (!isListening) {
+              audioContext.resume().then(() => {
+                console.log('AudioContext is now allowed to start.');
+                isListening = true;
+                updateFrequencyData();
+              });
+            } else {
+              isListening = false;
+              cancelAnimationFrame(animationFrameId); // Stop the animation frame
+              console.log('AudioContext is now stopped.');
+  
+              // affichage des éléments enregistrés dans le tableau 
+              document.getElementById("result").innerText = affichage(result);
+            }
+          });
     }
     );
 });
@@ -101,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () =>{
 function processFrequencies(){
     let index;
     let tabResult = [0, 0, 0, 0, 0, 0, 0, 0];
-    for(let i=0; i<frequencies.length; i++){
+    for(let i=0; i<8; i++){
         index = getIndexAtFrequency(frequencies[i]);
         if(frequencyData[index] > seuil){
             tabResult[i] = 1;
@@ -115,4 +141,4 @@ function getIndexAtFrequency(frequency) {
         return -1; 
     }
     return Math.round((frequency - minFrequencyAnalyser) / frequencyWidthAnalyser);
-  }
+}
