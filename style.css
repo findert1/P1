@@ -30,7 +30,12 @@ header img {
     padding: 3px 20px; /* Ajoutez un espace à l'intérieur du rectangle noir */
 }
 
+ /*modification des éléments de la page pour avoir des lien interne plus propre*/
 
+ .lien-interne {
+    padding-top: 100px; /* Ajustez cette valeur selon l'espace souhaité */
+    margin-top: -100px; /* Cette valeur doit être égale à l'opposé de padding-top */
+  }
 
 
 
@@ -163,14 +168,15 @@ input[type="text"] {
 
 /* Le bouton d'ouverture du menu */
 .openbtn {
-    font-size: 20px;
-    cursor: pointer;
-    background-color: #111;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-}
-
+    position: fixed; /* Positionne le bouton de manière fixe sur la page */
+    top: 0; /* En haut de la page */
+    left: 0; /* À gauche de la page */
+    
+    margin-left: 10px; /* Ajoute un peu d'espace à gauche pour ne pas coller totalement au bord */
+    margin-top: 10px; /* Ajoute un peu d'espace en haut */
+    border-radius: 20px;/*bords*/
+  }
+  
 .openbtn:hover {
     background-color: #444;
 }
@@ -194,4 +200,10 @@ input[type="text"] {
     transform: translateX(0); /* Fait apparaître le menu */
 }
 
-
+/* seconde page*/ 
+.footer-a-propos {
+    background-color: #000000; /* Couleur de fond */
+    color: #ffffff; /* Couleur du texte */
+    padding: 20px; /* Espacement intérieur */
+    text-align: center; /* Alignement du texte */
+  }

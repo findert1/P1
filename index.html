@@ -11,15 +11,16 @@
 <body>
   <div id="sidebarMenu" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-    <a href="#">Accueil</a>
-    <a href="#">À propos</a>
-    <a href="#">Services</a>
-    <a href="#">Contact</a>
+    <a href="#" onclick="closeNav()">Accueil</a>
+    <a href="#decodeur" onclick="closeNav()">Décodeur</a>
+    <a href="#message" onclick="closeNav()">Envoyer un Message</a>
+    <a href="à_propo.html" target="_blank"> Description</a>
+    <a href="#contact" onclick="closeNav()">Contact</a>
 </div>
 <div id="main">
   <header>
     <div class="header-text">
-      <button class="openbtn" onclick="openNav()">☰ Ouvrir le Menu</button>
+      <button class="openbtn" onclick="openNav()">☰ Menu</button>
         <h1>Communication par Ondes sonores</h1>
     </div>
 </header>
@@ -28,7 +29,7 @@
     <section>
       
     
-      <h2>Décodeur</h2>
+      <h2 id="decodeur" class="lien-interne">Décodeur</h2>
       
         <section>
             <h3>Analyse de fréquence</h3>
@@ -57,7 +58,7 @@
     <main>
         <section>
         <section>
-            <h2>Envoyer un Message</h2>
+            <h2 id="message" class="lien-interne">Envoyer un Message</h2>
             <input type="text" id="text-input" placeholder="Tapez quelque chose">
             <button id="send-sound">Convertir et jouer le son</button>
         </section>
@@ -75,7 +76,7 @@
     </section>
     </body>
 
-    <footer>
+    <footer id="contact" class="lien-interne">
       <p>&copy; 2024 Guillaume Lincot et Thomas Boulineau. Tous droits réservés.</p>
       <!-- Lien vers le projet GitHub -->
       <p>Consultez notre projet sur <a href="https://github.com/findert1/P1" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
