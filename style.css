@@ -125,3 +125,73 @@ input[type="text"] {
         padding: 0;
     }
 }
+
+/*menu hamburger */
+
+./* Le menu glissant */
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+/* Les liens du menu */
+.sidebar a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+/* Le bouton de fermeture */
+.sidebar .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+/* Le bouton d'ouverture du menu */
+.openbtn {
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #111;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+}
+
+.openbtn:hover {
+    background-color: #444;
+}
+
+/* Le menu glissant */
+.sidebar {
+    height: 100%;
+    width: 250px; /* Définissez une largeur fixe pour le menu */
+    position: fixed;
+    z-index: 2; /* Assurez-vous que le z-index est supérieur à celui des autres éléments */
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    transition: 0.5s;
+    transform: translateX(-100%); /* Cache le menu hors de l'écran */
+}
+
+/* Ajouter ce style pour ouvrir le menu */
+.menu-open .sidebar {
+    transform: translateX(0); /* Fait apparaître le menu */
+}
+
+

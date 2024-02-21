@@ -234,4 +234,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 });
+/* menu hamburger*/
+function openNav() {
+  document.getElementById("sidebarMenu").style.width = "250px";
+  document.body.classList.add('menu-open');
+}
+
+function closeNav() {
+  document.getElementById("sidebarMenu").style.width = "0";
+  document.body.classList.remove('menu-open');
+}
 
