@@ -159,7 +159,7 @@ input[type="text"] {
 
 /*menu hamburger */
 
-./* Le menu glissant */
+/* Le menu glissant */
 .sidebar {
     height: 100%;
     width: 0;
@@ -233,3 +233,5 @@ input[type="text"] {
     padding: 20px; /* Espacement intérieur */
     text-align: center; /* Alignement du texte */
   }
+
+  /* customisation des avis */
