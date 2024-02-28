@@ -71,7 +71,7 @@ let frequencyData;
 let frequencies = [];
 let seuil = 180;
 
-for(let i=0; i<4; i++){
+for(let i=0; i<8; i++){
     frequencies[i] = FREQ_LSB + i*STEP;
 }
 
