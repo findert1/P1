@@ -105,8 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const analyser = audioContext.createAnalyser();
     let isListening = false;
     let animationFrameId;
-    var register = new Array();
-    var result = new Array();
+    var register = new Array(); // enregistrement des fréquences
+    var result = new Array(); // mot de sortie
     var index = 0;
     var indexLettre = 0;
     const seuil = 100;
@@ -177,17 +177,27 @@ document.addEventListener('DOMContentLoaded', () => {
               derniers.indexOf(Math.min(...derniers)) + marge){
                 var lettreTemp = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
                 if(indexLettre != 0){
-                  if(result[indexLettre-1] != lettreTemp){
+                  if(result[indexLettre-1] != lettreTemp){ // s'il s'agit d'une suite de deux caractères différents
                     result[indexLettre] = lettreTemp;
                     console.log(result[indexLettre]);
                     indexLettre ++;
-                    
+                  }else{ // s'il s'agit de deux fois le même caractère
+                    if(index>2*longueur && indexLettre>1){ 
+                      derniers = register.slice(-2*longueur);
+                      if(derniers.indexOf(Math.max(...derniers)) <
+                            derniers.indexOf(Math.min(...derniers)) + marge
+                            && lettreTemp != result[indexLettre-1] && lettreTemp != result[indexLettre-2]){
+                        var lettreTemp = istegerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
+                        result[indexLettre] = lettreTemp;
+                        console.log(result[indexLettre]);
+                        indexLettre ++;
+                      }
+                    }
                   }
                 }else{
                   result[indexLettre] = lettreTemp;
                   console.log(result[indexLettre]);
                   indexLettre ++;
-                  
                 }
                 
               }
