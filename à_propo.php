@@ -51,7 +51,36 @@
         </section>
         <section>
             <h2> Avis :</h2>
-            <?php include 'display_comments.php'; ?>
+            <?php
+              $servername = "localhost";
+              $username = "guillaumelincot8701";
+              $password = "1Wv2i2DVWata";
+              $dbname = "guillaumelincot8701";
+              $port = 3306;
+          
+              $conn = new mysqli($servername, $username, $password, $dbname, $port);
+          
+              if ($conn->connect_error) {
+                die("Connection failed: " . $conn->connect_error);
+              }
+          
+              $sql = "SELECT ID, Nom, Note, Avis, Date FROM avis ORDER BY Date DESC";
+              $result = $conn->query($sql);
+          
+              if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                  echo "<div class='avis'>";
+                  echo "<h3>" . htmlspecialchars($row['Nom']) . "</h3>";
+                  echo "<p>Note : " . str_repeat('★', $row['Note']) . "</p>";
+                  echo "<p>" . nl2br(htmlspecialchars($row['Avis'])) . "</p>";
+                  echo "<p>Posté le : " . $row['Date'] . "</p>";
+                  echo "</div>";
+                }
+              } else {
+                echo "<p>Aucun avis pour le moment.</p>";
+              }
+              $conn->close();
+            ?>
           </section>
           
     </main>

@@ -235,3 +235,26 @@ input[type="text"] {
   }
 
   /* customisation des avis */
+  .avis {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+  }
+  
+  .avis h3 {
+    color: #333;
+    margin: 0 0 5px 0;
+  }
+  
+  .avis p {
+    margin: 5px 0;
+  }
+  
+  .avis p.note {
+    color: #f5a623;
+    font-size: 1.2em;
+  }
+  
+  
