@@ -52,8 +52,8 @@ function extractAmplitudeForFrequency(inputBuffer, targetFrequency, sampleRate) 
 
     // Calcul de la transformée de Fourier discrète (DFT)
     let fft = new Array(N).fill(0);
-    for (let k = 0; k < N; k++) {
-        for (let n = 0; n < N; n++) {
+    for (let k = 0; k < N; k++) { // pour chaque du tableau résultat
+        for (let n = 0; n < N; n++) { // pour chaque du buffer
             fft[k] += fftBuffer[n] * Math.cos(2 * Math.PI * k * n / N);
         }
     }
