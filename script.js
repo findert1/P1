@@ -1,4 +1,3 @@
-
 let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 const textInput = document.getElementById("text-input");
@@ -27,8 +26,6 @@ function startSending() {
     // Introduisez un délai avant de commencer à envoyer
     setTimeout(() => sendTextAsSound(textToEncode), ADDITIONAL_DELAY_MS);
 }
-
-
 
 function sendTextAsSound(text) {
     let tones = [START_FREQ]; // Commencez par ajouter le son de départ
@@ -96,7 +93,7 @@ function affichage(tab){ // faire en sorte que cette fonction retourne un string
 }
 
 function frequencyToChar(frequence){
-  let code = Math.floor((frequence - START_FREQ) / STEP_FREQ); // voir si on utilise Math.round en fonction des résultats
+  let code = Math.round((frequence - START_FREQ) / STEP_FREQ); 
   if(code >= 32){
     return String.fromCharCode(code);
   }else{
@@ -116,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var index = 0;
     var indexLettre = 0;
     const seuil = 100;
-    const seuil_temps = 200;
+    const seuil_temps = 180;
     const marge = 3; // diffénrece de fréquences entre 2 lettres
     const longueur = 13; // combien de fois une lettre doit se répéter pour qu'on confirme bien que c'est elle
 
@@ -167,12 +164,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Mesure du temps pendant lequel une fréquence a été émise
                 let temps = performance.now() - chrono;
                 if(temps > seuil_temps){
-                  var lettreTemp = 
-                  result[indexLettre] = lettreTemp;
-                  console.log(lettreTemp);
-                  indexLettre ++;
+                  var lettreTemp = frequencyToChar(register[index-2] * frequencyResolution);
+                  for(let i=0; i< Math.floor(temps/seuil_temps); i++){
+                    result[indexLettre] = lettreTemp;
+                    console.log(lettreTemp);
+                    indexLettre ++;
+                  }
+                  console.log("Temps de la lettre : " + temps);
                 }
-                console.log("Temps de la lettre : " + temps);
+                
                 chrono = performance.now();
               }
             }else{
@@ -247,10 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         indexLettre = 0;
         register = new Array();
         result = new Array();
-        var ulElement = document.querySelector('ul');
-        while (ulElement.firstChild) {
-            ulElement.removeChild(ulElement.firstChild);
-        }
+        document.getElementById("result").innerText = "";
       });
 });
 /* menu hamburger*/
