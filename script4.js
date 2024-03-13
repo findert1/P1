@@ -1,6 +1,7 @@
 const FREQ_LSB = 3000;
-const STEP = 333;
+const STEP = 666;
 const DURATION = 0.5;
+const THRESHOLD = 5;
 
 //import * as mod from "./my-audio-worklet-processor.js";
 
@@ -21,13 +22,27 @@ async function setupAudioProcessing() {
     input.connect(audioWorkletNode);
     console.log("connecté");
 
+    let compteur = 0;
+    let debut = performance.now();
+    let temps = 0;
+    let frequence = 0;
+
     audioWorkletNode.port.onmessage = function(event) {
         const result = event.data.result;
         //console.log(result);
-        document.getElementById("result1").textContent = result[0];
-        document.getElementById("result2").textContent = result[1];
-        document.getElementById("result3").textContent = result[2];
-        document.getElementById("result4").textContent = result[3];
+        document.getElementById("result1").textContent = result[0] > THRESHOLD;
+        document.getElementById("result2").textContent = result[1] > THRESHOLD;
+        document.getElementById("result3").textContent = result[2] > THRESHOLD;
+        document.getElementById("result4").textContent = result[3] > THRESHOLD;
+        
+        compteur++;
+        if(compteur == 10){
+            temps = (performance.now() - debut)/1000;
+            frequence = Math.round((1/temps) * 10);
+            debut = performance.now();
+            document.getElementById("frequence").textContent = "Fréquence des analyses : " + frequence + " Hz.";
+            compteur = 0;
+        }
     }
 }
 

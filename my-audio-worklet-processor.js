@@ -7,13 +7,12 @@ class MyAudioWorkletProcessor extends AudioWorkletProcessor {
     super(options);
     console.log("Construction de l'instance du processing du son...");
     // constantes pour les calculs
-    this.freq_lsb = 3000;
-    this.step = 333;
+    this.freq_lsb = 1000;
+    this.step = 666;
     this.duration = 0.5;
 
     this.setup = false;
-    
-
+  
     this.window; // pour ne pas calculer la fenêtre à chaque appel
     this.result = new Array(4).fill(0);
     this.target_fequency = new Array(4);
@@ -53,6 +52,38 @@ class MyAudioWorkletProcessor extends AudioWorkletProcessor {
     }
     console.log("Indices cible : " + this.target_index);
   }
+
+  calculDFT(input){
+    var N = input.length;
+    var dftReal = new Array(N);
+    var dftImag = new Array(N);
+
+    for (var k = 0; k < N; k++) {
+        for (var n = 0; n < N; n++) {
+            var theta = (2 * Math.PI * k * n) / N;
+            dftReal[k] += input[n] * Math.cos(theta);
+            dftImag[k] -= input[n] * Math.sin(theta);
+        }
+    }
+
+    return [dftReal, dftImag];
+  }
+
+  calculFrequences(sampleRate, N) {
+    var frequencies = new Array(N);
+    for (var k = 0; k < N; k++) {
+        frequencies[k] = (k * sampleRate) / N;
+    }
+    return frequencies;
+  }
+
+  calculAmplitude(dftReal, dftImag) {
+    var magnitude = new Array(dftReal.length);
+    for (var i = 0; i < dftReal.length; i++) {
+        magnitude[i] = Math.sqrt(dftReal[i] * dftReal[i] + dftImag[i] * dftImag[i]);
+    }
+    return magnitude;
+}
 
   process(inputs, outputs, parameters) {
     //console.log(inputs[0][0]);
@@ -94,6 +125,14 @@ class MyAudioWorkletProcessor extends AudioWorkletProcessor {
     //console.log("dftBuffer : " + dftBuffer);
 
     // Calcul de la dft
+    //let [dftReal, dftImag] = this.calculDFT(dftBuffer);
+    //console.log("dftReal : " + dftReal);
+    //console.log("dftImag : " + dftImag);
+
+    // Extraction de l'amplitude de chaque fréquence
+    //let amplitude = this.calculAmplitude(dftReal, dftImag);
+
+    
     for(let i=0; i<dft.length; i++){
       for (let j = 0; j < dftBuffer.length; j++) { // pour chaque du buffer
         dft[i] += dftBuffer[j] * Math.cos(2 * Math.PI * this.target_index[Math.floor(i/2)] * j / dftBuffer.length);
