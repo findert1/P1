@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       if(derniers.indexOf(Math.max(...derniers)) <
                             derniers.indexOf(Math.min(...derniers)) + marge
                             && lettreTemp != result[indexLettre-1] && lettreTemp != result[indexLettre-2]){
-                        var lettreTemp = istegerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
+                        var lettreTemp = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
                         result[indexLettre] = lettreTemp;
                         console.log(result[indexLettre]);
                         indexLettre ++;
