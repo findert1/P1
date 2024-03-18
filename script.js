@@ -101,8 +101,12 @@ function frequencyToChar(frequence){
   }
 }
 
+
+
 document.addEventListener('DOMContentLoaded', () => {
-    //const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+
+
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 16384;
     let frequencyResolution = audioContext.sampleRate / analyser.fftSize;
@@ -115,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const seuil = 100;
     const seuil_temps = 180;
     const marge = 3; // diffénrece de fréquences entre 2 lettres
-    const longueur = 13; // combien de fois une lettre doit se répéter pour qu'on confirme bien que c'est elle
 
     let chrono = performance.now();
 
