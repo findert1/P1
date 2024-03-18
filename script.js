@@ -179,44 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
               chrono = performance.now();
             }
             index++;
-
-
-            /*
-            // il faut compter le nombre de fois que l'entrée du tableau se répète à peu de choses près
-            if(index>longueur){
-              var derniers = register.slice(-longueur);
-
-              // vérification si on en a pas mal à suivre avec une certaine marge
-              if(derniers.indexOf(Math.max(...derniers)) <
-              derniers.indexOf(Math.min(...derniers)) + marge){
-                var lettreTemp = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
-                if(indexLettre != 0){
-                  if(result[indexLettre-1] != lettreTemp){ // s'il s'agit d'une suite de deux caractères différents
-                    result[indexLettre] = lettreTemp;
-                    console.log(result[indexLettre]);
-                    indexLettre ++;
-                  }else{ // s'il s'agit de deux fois le même caractère
-                    if(index>2*longueur && indexLettre>1){ 
-                      derniers = register.slice(-2*longueur);
-                      if(derniers.indexOf(Math.max(...derniers)) <
-                            derniers.indexOf(Math.min(...derniers)) + marge
-                            && lettreTemp != result[indexLettre-1] && lettreTemp != result[indexLettre-2]){
-                        var lettreTemp = integerToChar(((maxIndex-freqA)/(freqZ-freqA))*(127-32));
-                        result[indexLettre] = lettreTemp;
-                        console.log(result[indexLettre]);
-                        indexLettre ++;
-                      }
-                    }
-                  }
-                }else{
-                  result[indexLettre] = lettreTemp;
-                  console.log(result[indexLettre]);
-                  indexLettre ++;
-                }
-                
-              }
-            }
-            */
           }
           requestAnimationFrame(updateFrequencyData);
         }
