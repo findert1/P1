@@ -16,11 +16,14 @@ syncClockWithNTP();
 
 //setInterval(synchroniserHeureAvecNTP, 1000);
 
+//setInterval(envoiTexte, 1100);
+
 sendButton.addEventListener("click", function() {
     if(audioContext.state === "suspended") {
         audioContext.resume().then(() => {
             console.log("AudioContext resumed successfully");
-            envoiTexte();
+            //envoiTexte();
+            envoiTexteNTP();
         });
     } else {
         envoiTexte();
@@ -29,16 +32,28 @@ sendButton.addEventListener("click", function() {
 
 function envoiTexte() {
   const maintenantLocal = Date.now();
+  //const maintenantAbsolu = maintenantLocal + ecartAbsoluLocal;
+  //const heureEnvoiAbsolu = Math.ceil(maintenantAbsolu / 1000) * 1000;
+  const heureEnvoi = Math.ceil(maintenantLocal / 1000) * 1000;
+  const delaiEnvoi = heureEnvoi - maintenantLocal;
+  console.log("Signal envoyé dans " + delaiEnvoi.toString());
+  document.getElementById("displayDelai").innerText = "Signal envoyé dans " + delaiEnvoi.toString(); 
+  setTimeout(() => sendTextAsSound(textInput.value), delaiEnvoi);
+}
+
+function envoiTexteNTP(){ // pareil que avant mais se base avec une synchro NTP
+  const maintenantLocal = Date.now();
   const maintenantAbsolu = maintenantLocal + ecartAbsoluLocal;
   const heureEnvoiAbsolu = Math.ceil(maintenantAbsolu / 1000) * 1000;
+  //const heureEnvoi = Math.ceil(maintenantLocal / 1000) * 1000;
   const delaiEnvoi = heureEnvoiAbsolu - maintenantLocal;
   console.log("Signal envoyé dans " + delaiEnvoi.toString());
   document.getElementById("displayDelai").innerText = "Signal envoyé dans " + delaiEnvoi.toString(); 
   setTimeout(() => sendTextAsSound(textInput.value), delaiEnvoi);
 }
 
-function sendTextAsSound(text) {
-    let tones = [START_FREQ]; // Commencez par ajouter le son de départ
+async function sendTextAsSound(text) {
+    let tones = [];
     for (let i = 0; i < text.length; i++) {
         tones.push(charToFrequency(text.charAt(i)));
     }
@@ -50,14 +65,25 @@ function sendTextAsSound(text) {
       });
     } 
 
-    for(let i=0; i<tones.length; i++){
-      playFrequency(tones[i], audioContext.currentTime + (TONE_LENGTH_MS * i)/1000);
-      //console.log(i);
-    }
+    let repetitionsPreambule = 5;
+    let maintenant = audioContext.currentTime;
 
+    // jouer préambule
+    
+    for(let i=0; i<repetitionsPreambule; i++){ // j'ai choisi arbitrairement 5 fois
+      playFrequency(START_FREQ, maintenant + (TONE_LENGTH_MS * i)/1000, TONE_LENGTH_MS/2);
+      console.log("Préambule 1 : " + (maintenant + (TONE_LENGTH_MS * i)/1000) + " " + TONE_LENGTH_MS/2);
+      //playFrequency(1, maintenant + (TONE_LENGTH_MS * (i+1))/1000, TONE_LENGTH_MS/2);
+      //console.log("Préambule 0 : " + (maintenant + (TONE_LENGTH_MS * (i+1))/1000) + " " + TONE_LENGTH_MS/2);
+    }
+    
+    for(let i=0; i<tones.length; i++){
+      playFrequency(tones[i], maintenant + (TONE_LENGTH_MS * i)/1000 + repetitionsPreambule * TONE_LENGTH_MS / 1000, TONE_LENGTH_MS);
+      console.log("Tone : " + (maintenant + (TONE_LENGTH_MS * i)/1000 + repetitionsPreambule * TONE_LENGTH_MS / 1000) + " " + TONE_LENGTH_MS);
+    }
 }
 
-function playFrequency(freq, debutAudio) {
+function playFrequency(freq, debutAudio, duree) {
     let oscillator = audioContext.createOscillator(); // un seul oscillateur pour chaque son
     let gainNode = audioContext.createGain();
 
@@ -69,8 +95,12 @@ function playFrequency(freq, debutAudio) {
     gainNode.connect(audioContext.destination);
 
     oscillator.start(debutAudio);
+
     //console.log(new Date(Date.now()).getMilliseconds());
-    oscillator.stop(debutAudio + TONE_LENGTH_MS / 1000);
+    //gainNode.gain.setValueAtTime(0, debutAudio + (duree-50)/1000);*
+    //gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.03);
+    //gainNode.gain.exponentialRampToValueAtTime(0.01, debutAudio+(duree/1000) );
+    oscillator.stop(debutAudio + duree/1000);
 }
 
 function charToFrequency(caractere){
