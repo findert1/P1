@@ -1,12 +1,11 @@
 <?php
-$servername = "localhost"; // ou "127.0.0.1", ce qui est l'adresse de localhost
-$port = 3306; // Le port par défaut pour MySQL
-$username = "guillaumelincot8701";
-$password = "1Wv2i2DVWata";
-$dbname = "guillaumelincot8701"; // Assurez-vous que c'est le bon nom de base de données
+$servername = "localhost";
+$username = "root"; // Utilisateur par défaut de XAMPP pour MySQL
+$password = ""; // Par défaut, XAMPP n'a pas de mot de passe pour MySQL
+$dbname = "avis"; // Assurez-vous que c'est le bon nom de base de données
 
 // Créez une connexion
-$conn = new mysqli($servername, $username, $password, $dbname, $port);
+$conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
@@ -23,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("siss", $nom, $note, $avis, $date);
 
     if ($stmt->execute()) {
-      echo "New record created successfully";
+      
     } else {
       echo "Error: " . $stmt->error;
     }

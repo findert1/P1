@@ -53,12 +53,11 @@
             <h2> Avis :</h2>
             <?php
               $servername = "localhost";
-              $username = "guillaumelincot8701";
-              $password = "1Wv2i2DVWata";
-              $dbname = "guillaumelincot8701";
-              $port = 3306;
+              $username = "root"; // Utilisateur par défaut de XAMPP pour MySQL
+              $password = ""; // Par défaut, XAMPP n'a pas de mot de passe pour MySQL
+              $dbname = "avis"; // Assurez-vous que c'est le bon nom de base de données
           
-              $conn = new mysqli($servername, $username, $password, $dbname, $port);
+              $conn = new mysqli($servername, $username, $password, $dbname);
           
               if ($conn->connect_error) {
                 die("Connection failed: " . $conn->connect_error);
