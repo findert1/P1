@@ -2,7 +2,7 @@ let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
-const TONE_LENGTH_MS = 250;
+const TONE_LENGTH_MS = 400;
 const ADDITIONAL_DELAY_MS = 0;  // Augmentez si nécessaire pour vous assurer que le son de départ est joué
 
 // Nouvelles fréquences
@@ -23,7 +23,7 @@ sendButton.addEventListener("click", function() {
         audioContext.resume().then(() => {
             console.log("AudioContext resumed successfully");
             //envoiTexte();
-            envoiTexteNTP();
+            envoiTexte();
         });
     } else {
         envoiTexte();
@@ -57,7 +57,7 @@ async function sendTextAsSound(text) {
     for (let i = 0; i < text.length; i++) {
         tones.push(charToFrequency(text.charAt(i)));
     }
-    tones.push(END_FREQ); // Ajoutez le son de fin
+    tones.push(END_FREQ); // Ajouter le son de fin
 
     if (audioContext.state === 'suspended') {
       audioContext.resume().then(() => {
@@ -65,17 +65,26 @@ async function sendTextAsSound(text) {
       });
     } 
 
-    let repetitionsPreambule = 5;
+    let repetitionsPreambule = 6; // 5 bits simples et 1 bit double
     let maintenant = audioContext.currentTime;
 
     // jouer préambule
     
-    for(let i=0; i<repetitionsPreambule; i++){ // j'ai choisi arbitrairement 5 fois
+    for(let i=0; i<repetitionsPreambule - 1; i++){ // j'ai choisi arbitrairement 5 fois
+      // ce qui sera considéré comme le bit 1 du préambule
       playFrequency(START_FREQ, maintenant + (TONE_LENGTH_MS * i)/1000, TONE_LENGTH_MS/2);
       console.log("Préambule 1 : " + (maintenant + (TONE_LENGTH_MS * i)/1000) + " " + TONE_LENGTH_MS/2);
-      //playFrequency(1, maintenant + (TONE_LENGTH_MS * (i+1))/1000, TONE_LENGTH_MS/2);
-      //console.log("Préambule 0 : " + (maintenant + (TONE_LENGTH_MS * (i+1))/1000) + " " + TONE_LENGTH_MS/2);
+
+      // ce qui sera considéré comme le bit 0
+      //if(i != repetitionsPreambule - 2){ // parce qu'on veut pas jouer de 0 à la fin de la trame de préambule
+        playFrequency(START_FREQ + 3*STEP_FREQ, maintenant + (TONE_LENGTH_MS * (i+1/2))/1000, TONE_LENGTH_MS/2); // 3* parce que je l'aurai décidé ainsi
+        console.log("Préambule 0 : " + (maintenant + (TONE_LENGTH_MS * (i+1/2))/1000) + " " + TONE_LENGTH_MS/2);
+      //}
     }
+
+    // jouer le dernier bit de préambule qui annonce le début des données
+    playFrequency(START_FREQ, maintenant + (TONE_LENGTH_MS * (repetitionsPreambule-1))/1000, TONE_LENGTH_MS);
+    console.log("Préambule 1 : " + (maintenant + (TONE_LENGTH_MS * (repetitionsPreambule-1))/1000) + " " + TONE_LENGTH_MS);
     
     for(let i=0; i<tones.length; i++){
       playFrequency(tones[i], maintenant + (TONE_LENGTH_MS * i)/1000 + repetitionsPreambule * TONE_LENGTH_MS / 1000, TONE_LENGTH_MS);
@@ -121,11 +130,14 @@ function affichage(tab){ // faire en sorte que cette fonction retourne un string
 
 function frequencyToChar(frequence){
   let code = Math.round((frequence - START_FREQ) / STEP_FREQ); 
+  return String.fromCharCode(code);
+  /*
   if(code >= 32){
     return String.fromCharCode(code);
   }else{
     return ' ';
   }
+  */
 }
 
 // variables
@@ -134,7 +146,7 @@ analyser.fftSize = 16384;
 let frequencyResolution = audioContext.sampleRate / analyser.fftSize;
 let isListening = false;
 let animationFrameId;
-var register = new Array(); // enregistrement des fréquences
+//var register = new Array(); // enregistrement des fréquences
 var result = new Array(); // mot de sortie
 var index = 0;
 var indexLettre = 0;
@@ -154,7 +166,14 @@ seuilElement.textContent = `Seuil : ${seuil}`;
 
 let chrono = performance.now();
 
+let préambuleHaut = false;
+let heurePreambule;
+let heuresFrontsMontants = [];
+let indexHFM = 0; // HFM = temps fronts montants
+let heuresFrontsDescendants = [];
+let indexHFD = 0; // HFD = temps fronts descendants
 
+let idEchantillonnage;
 
 // validation de l'autorisation d'accès au micro par l'utilisateur
 
@@ -168,14 +187,14 @@ document.addEventListener('DOMContentLoaded', () => {
             audioContext.resume().then(() => {
               console.log('AudioContext is now allowed to start.');
               isListening = true;
-              updateFrequencyData();
+              //updateFrequencyData();
+              debuterEcoute();
             });
           } else {
             isListening = false;
-            cancelAnimationFrame(animationFrameId); // Stop the animation frame
             console.log('AudioContext is now stopped.');
-            // affichage des éléments enregistrés dans le tableau 
-            document.getElementById("result").innerText = affichage(result);
+            terminerEcoute();
+            //document.getElementById("result").innerText = affichage(result);
           }
         });
       })
@@ -183,24 +202,148 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error accessing microphone:', error);
       });
       document.getElementById('reset-button').addEventListener('click', () => {
+        /* ne sert à rien, supprimer le bouton de reset
         index = 0;
         indexLettre = 0;
-        register = new Array();
+        //register = new Array();
         result = new Array();
         document.getElementById("result").innerText = "";
+
+        préambuleHaut = false;
+        heurePreambule = null;
+        heuresFrontsMontants = [];
+        indexHFM = 0; // HFM = temps fronts montants
+        heuresFrontsDescendants = [];
+        indexHFD = 0; // HFD = temps fronts descendants
+
+        idEchantillonnage = null;
+        */
       });
 });
 
-function updateFrequencyData() {
-  if (!isListening) {
-    return; // Stop updating when not listening
+let preambuleTermine = false;
+function debuterEcoute(){
+  analyser.getByteFrequencyData(frequencyData);
+  // mettre toutes les fréquences en-dessous de la fréquence min à 0
+  for(let i=0; i<START_FREQ/frequencyResolution; i++){
+    frequencyData[i] = 0;
   }
+  // Find the index of the maximum value in the frequencyData array
+
+  const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
+  maxFrequencyElement.textContent = `Max Frequency: ${maxIndex * frequencyResolution}`;
+  maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
+
+  // dans le cas où on est dans les fréquences de préambule
+  if(frequencyData[maxIndex] >= seuil 
+    && maxIndex > START_FREQ/frequencyResolution - marge 
+    && maxIndex < START_FREQ/frequencyResolution + marge ){ // quand on est dans les parties hautes du préambule
+      console.log("Son préambule détecté");
+      
+      // mesurer la longueur du signal de préambule
+      if(heurePreambule == null){
+        heurePreambule = performance.now();
+      }
+
+      if(!préambuleHaut){ // détection d'un front montant
+        préambuleHaut = true;
+        heuresFrontsMontants[indexHFM] = performance.now();
+        indexHFM++;
+        console.log("Front montant préambule");
+      }
+
+      // vérifier si on n'est pas dans le dernier bit qui dure deux fois plus longtemps
+      if(performance.now() - heuresFrontsMontants[indexHFM-1] > TONE_LENGTH_MS*0.9){
+        //console.log(performance.now() - heuresFrontsMontants[indexHFM-1]);
+        // dans ce cas il faut caler l'horloge
+        let somme = 0;
+        console.log("indexHFD : " + indexHFD);
+        for(let i=0; i<indexHFD; i++){
+          somme += heuresFrontsDescendants[i] + (indexHFD + 1 - i) * TONE_LENGTH_MS;
+        }
+        let heureDebutPerformance = somme / (indexHFD); // toujours + 1 ici car voir schéma
+        //let heureDebutDate = new Date(performance.timing.navigationStart + heureDebutPerformance);
+        let delaiAvantEchantillonage = heureDebutPerformance - performance.now();
+        console.log("Dernier bit de préambule détecté, début de l'échantillonnage dans " + delaiAvantEchantillonage);
+        setTimeout(commencerEchantillonnage, delaiAvantEchantillonage);
+        preambuleTermine = true;
+      }
+  }
+  
+  // dans le cas où on est dans les parties "basses" du préambule
+  if(frequencyData[maxIndex] >= seuil 
+    && maxIndex > (START_FREQ+3*STEP_FREQ)/frequencyResolution - marge //3* parce que c'est encore moi qui l'ai décidé
+    && maxIndex < (START_FREQ+3*STEP_FREQ)/frequencyResolution + marge){ // quand on est dans les parties creuses du préambule
+    if(préambuleHaut){ // et qu'on détecte que c'est un front descendant
+      préambuleHaut = false;
+      heuresFrontsDescendants[indexHFD] = performance.now();
+      console.log("longueur bit haut préambule : " + (heuresFrontsDescendants[indexHFD]-heuresFrontsMontants[indexHFM-1]));
+      indexHFD++;
+      console.log("Front descendant préambule");
+    }
+  }
+  if(!preambuleTermine){
+    requestAnimationFrame(debuterEcoute);
+  }
+  
+}
+
+// décodage des fréquences :
+function commencerEchantillonnage(){
+  idEchantillonnage = setInterval(echantillonnage, TONE_LENGTH_MS);
+}
+
+function terminerEcoute(){
+  preambuleTermine = false;
+  clearInterval(idEchantillonnage); // arrêt de l'échantillonnage à intervalles réguliers
+  idEchantillonnage = null;
+  console.log("fin de l'échantillonnage.");
+  index = 0;
+  indexLettre = 0;
+  //register = new Array();
+  result = new Array();
+  document.getElementById("result").innerText = "";
+
+  préambuleHaut = false;
+  heurePreambule = null;
+  heuresFrontsMontants = [];
+  indexHFM = 0; // HFM = temps fronts montants
+  heuresFrontsDescendants = [];
+  indexHFD = 0; // HFD = temps fronts descendants
+
+  idEchantillonnage = null;
+}
+
+function echantillonnage(){
+  analyser.getByteFrequencyData(frequencyData);
+  for(let i=0; i<START_FREQ/frequencyResolution; i++){
+    frequencyData[i] = 0;
+  }
+
+  const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
+  maxFrequencyElement.textContent = `Max Frequency: ${maxIndex * frequencyResolution}`;
+  maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
+
+  var lettreTemp = frequencyToChar(frequencyData[maxIndex] * frequencyResolution);
+  result[indexLettre] = lettreTemp;
+  console.log(lettreTemp);
+  indexLettre ++;
+  console.log("échantillonnage... " + indexLettre);
+
+  if(frequencyData[maxIndex] >= seuil 
+    && maxIndex > END_FREQ/frequencyResolution - marge 
+    && maxIndex < END_FREQ/frequencyResolution + marge ){
+      terminerEcoute();
+  }
+}
+
+/*
+function updateFrequencyData() {
+
   analyser.getByteFrequencyData(frequencyData);
 
   // mettre toutes les fréquences en-dessous de la fréquence min à 0
-  for(let i=0; i<-1; i++){
-    frequencyData[i] = 0;
-  }
+  
 
   // Find the index of the maximum value in the frequencyData array
 
@@ -208,35 +351,30 @@ function updateFrequencyData() {
   maxFrequencyElement.textContent = `Max Frequency: ${maxIndex * frequencyResolution}`;
   maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
 
-  if(frequencyData[maxIndex] >= seuil && maxIndex > START_FREQ/frequencyResolution){
-    console.log("Son au-dessus des seuils détecté"); 
-    register[index] = maxIndex; 
-    
+  // détection du bit de fin
+  
+  /* Méthode qui mesure le temps de chaque bip
     // Détection du changement de fréquence
-    if(index > 1){
-      if(register[index] > register[index-1] + marge || register[index] < register[index-1] - marge){
-        console.log("Changement de fréquence détecté");
-        // Mesure du temps pendant lequel une fréquence a été émise
-        let temps = performance.now() - chrono;
-        if(temps > seuil_temps){
-          var lettreTemp = frequencyToChar(register[index-2] * frequencyResolution);
-          for(let i=0; i< Math.floor(temps/seuil_temps); i++){
-            result[indexLettre] = lettreTemp;
-            console.log(lettreTemp);
-            indexLettre ++;
-          }
-          console.log("Temps de la lettre : " + temps);
+    if(register[index] > register[index-1] + marge || register[index] < register[index-1] - marge){
+      console.log("Changement de fréquence détecté");
+      // Mesure du temps pendant lequel une fréquence a été émise
+      let temps = performance.now() - chrono;
+      if(temps > seuil_temps){
+        var lettreTemp = frequencyToChar(register[index-2] * frequencyResolution);
+        for(let i=0; i< Math.floor(temps/seuil_temps); i++){
+          result[indexLettre] = lettreTemp;
+          console.log(lettreTemp);
+          indexLettre ++;
         }
-        
-        chrono = performance.now();
+        console.log("Temps de la lettre : " + temps);
       }
-    }else{
       chrono = performance.now();
     }
     index++;
   }
-  requestAnimationFrame(updateFrequencyData);
-}
+  */
+  //requestAnimationFrame(updateFrequencyData);
+  
 
 /* menu hamburger*/
 function openNav() {
