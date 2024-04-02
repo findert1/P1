@@ -155,7 +155,6 @@ const seuil_temps = 180;
 const marge = 3; // diffénrece de fréquences entre 2 lettres
 
 const bufferLength = analyser.frequencyBinCount;
-const frequencyData = new Uint8Array(bufferLength);
 
 // Get the reference to the HTML elements
 const maxFrequencyElement = document.getElementById('max-frequency');
@@ -166,7 +165,7 @@ seuilElement.textContent = `Seuil : ${seuil}`;
 
 let chrono = performance.now();
 
-let préambuleHaut = false;
+let preambuleHaut = false;
 let heurePreambule;
 let heuresFrontsMontants = [];
 let indexHFM = 0; // HFM = temps fronts montants
@@ -209,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         result = new Array();
         document.getElementById("result").innerText = "";
 
-        préambuleHaut = false;
+        preambuleHaut = false;
         heurePreambule = null;
         heuresFrontsMontants = [];
         indexHFM = 0; // HFM = temps fronts montants
@@ -221,67 +220,75 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 });
 
-let preambuleTermine = false;
-function debuterEcoute(){
+function getMaxFrequency(){
+  const frequencyData = new Uint8Array(bufferLength);
   analyser.getByteFrequencyData(frequencyData);
-  // mettre toutes les fréquences en-dessous de la fréquence min à 0
+
   for(let i=0; i<START_FREQ/frequencyResolution; i++){
     frequencyData[i] = 0;
   }
-  // Find the index of the maximum value in the frequencyData array
 
   const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
-  maxFrequencyElement.textContent = `Max Frequency: ${maxIndex * frequencyResolution}`;
+  maxFrequencyElement.textContent = `Max Frequency: ${maxIndex * frequencyResolution}, ${frequencyToChar(maxIndex * frequencyResolution)}`;
   maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
 
+  requestAnimationFrame(getMaxFrequency);
+
+  return [maxIndex * frequencyResolution, frequencyData[maxIndex]];
+}
+
+let preambuleTermine = false;
+function debuterEcoute(){
+  const [maxFreq, amplitude] = getMaxFrequency();
+
   // dans le cas où on est dans les fréquences de préambule
-  if(frequencyData[maxIndex] >= seuil 
-    && maxIndex > START_FREQ/frequencyResolution - marge 
-    && maxIndex < START_FREQ/frequencyResolution + marge ){ // quand on est dans les parties hautes du préambule
+  if(amplitude >= seuil 
+    && maxFreq > START_FREQ - marge 
+    && maxFreq < START_FREQ + marge ){ // quand on est dans les parties hautes du préambule
       console.log("Son préambule détecté");
       
       // mesurer la longueur du signal de préambule
-      if(heurePreambule == null){
         heurePreambule = performance.now();
-      }
 
-      if(!préambuleHaut){ // détection d'un front montant
-        préambuleHaut = true;
-        heuresFrontsMontants[indexHFM] = performance.now();
+      if(!preambuleHaut){ // détection d'un front montant
+        preambuleHaut = true;
+        heuresFrontsMontants[indexHFM] = heurePreambule;
         indexHFM++;
         console.log("Front montant préambule");
-      }
-
-      // vérifier si on n'est pas dans le dernier bit qui dure deux fois plus longtemps
-      if(performance.now() - heuresFrontsMontants[indexHFM-1] > TONE_LENGTH_MS*0.9){
-        //console.log(performance.now() - heuresFrontsMontants[indexHFM-1]);
-        // dans ce cas il faut caler l'horloge
-        let somme = 0;
-        console.log("indexHFD : " + indexHFD);
-        for(let i=0; i<indexHFD; i++){
-          somme += heuresFrontsDescendants[i] + (indexHFD + 1 - i) * TONE_LENGTH_MS;
-        }
-        let heureDebutPerformance = somme / (indexHFD); // toujours + 1 ici car voir schéma
-        //let heureDebutDate = new Date(performance.timing.navigationStart + heureDebutPerformance);
-        let delaiAvantEchantillonage = heureDebutPerformance - performance.now();
-        console.log("Dernier bit de préambule détecté, début de l'échantillonnage dans " + delaiAvantEchantillonage);
-        setTimeout(commencerEchantillonnage, delaiAvantEchantillonage);
-        preambuleTermine = true;
       }
   }
   
   // dans le cas où on est dans les parties "basses" du préambule
-  if(frequencyData[maxIndex] >= seuil 
-    && maxIndex > (START_FREQ+3*STEP_FREQ)/frequencyResolution - marge //3* parce que c'est encore moi qui l'ai décidé
-    && maxIndex < (START_FREQ+3*STEP_FREQ)/frequencyResolution + marge){ // quand on est dans les parties creuses du préambule
-    if(préambuleHaut){ // et qu'on détecte que c'est un front descendant
-      préambuleHaut = false;
+  if(amplitude >= seuil 
+    && maxFreq > (START_FREQ+3*STEP_FREQ) - marge //3* parce que c'est encore moi qui l'ai décidé
+    && maxFreq < (START_FREQ+3*STEP_FREQ) + marge){ // quand on est dans les parties creuses du préambule
+    if(preambuleHaut){ // et qu'on détecte que c'est un front descendant
+      preambuleHaut = false;
       heuresFrontsDescendants[indexHFD] = performance.now();
       console.log("longueur bit haut préambule : " + (heuresFrontsDescendants[indexHFD]-heuresFrontsMontants[indexHFM-1]));
       indexHFD++;
       console.log("Front descendant préambule");
     }
   }
+
+  // vérifier si on n'est pas dans le dernier bit qui dure deux fois plus longtemps
+  if(performance.now() - heuresFrontsMontants[indexHFM-1] > TONE_LENGTH_MS
+  && preambuleHaut){
+    //console.log(performance.now() - heuresFrontsMontants[indexHFM-1]);
+    // dans ce cas il faut caler l'horloge
+    let somme = 0;
+    console.log("indexHFD : " + indexHFD);
+    for(let i=0; i<indexHFD; i++){
+      somme += heuresFrontsDescendants[i] + (indexHFD + 1 - i) * TONE_LENGTH_MS;
+    }
+    let heureDebutPerformance = somme / (indexHFD); // toujours + 1 ici car voir schéma
+    //let heureDebutDate = new Date(performance.timing.navigationStart + heureDebutPerformance);
+    let delaiAvantEchantillonage = heureDebutPerformance - performance.now() + 200;
+    console.log("Dernier bit de préambule détecté, début de l'échantillonnage dans " + delaiAvantEchantillonage);
+    setTimeout(commencerEchantillonnage, delaiAvantEchantillonage);
+    preambuleTermine = true;
+  }
+
   if(!preambuleTermine){
     requestAnimationFrame(debuterEcoute);
   }
@@ -304,7 +311,7 @@ function terminerEcoute(){
   result = new Array();
   document.getElementById("result").innerText = "";
 
-  préambuleHaut = false;
+  preambuleHaut = false;
   heurePreambule = null;
   heuresFrontsMontants = [];
   indexHFM = 0; // HFM = temps fronts montants
@@ -312,27 +319,23 @@ function terminerEcoute(){
   indexHFD = 0; // HFD = temps fronts descendants
 
   idEchantillonnage = null;
+  frequencyDataEnCours = false;
 }
 
+let frequencyDataEnCours = false;
 function echantillonnage(){
-  analyser.getByteFrequencyData(frequencyData);
-  for(let i=0; i<START_FREQ/frequencyResolution; i++){
-    frequencyData[i] = 0;
-  }
+  const [maxFreq, amplitude] = getMaxFrequency();
 
-  const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
-  maxFrequencyElement.textContent = `Max Frequency: ${maxIndex * frequencyResolution}`;
-  maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
-
-  var lettreTemp = frequencyToChar(frequencyData[maxIndex] * frequencyResolution);
+  var lettreTemp = frequencyToChar(maxFreq);
   result[indexLettre] = lettreTemp;
   console.log(lettreTemp);
   indexLettre ++;
   console.log("échantillonnage... " + indexLettre);
 
-  if(frequencyData[maxIndex] >= seuil 
-    && maxIndex > END_FREQ/frequencyResolution - marge 
-    && maxIndex < END_FREQ/frequencyResolution + marge ){
+  // détection du bit de fin
+  if(amplitude >= seuil 
+    && maxFreq > END_FREQ - marge 
+    && maxFreq < END_FREQ + marge ){
       terminerEcoute();
   }
 }
