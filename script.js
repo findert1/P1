@@ -12,7 +12,7 @@ const STEP_FREQ = 20;
 
 let serverTime;
 let ecartAbsoluLocal;
-syncClockWithNTP();
+//syncClockWithNTP();
 
 //setInterval(synchroniserHeureAvecNTP, 1000);
 
@@ -283,7 +283,7 @@ function debuterEcoute(){
     }
     let heureDebutPerformance = somme / (indexHFD); // toujours + 1 ici car voir schéma
     //let heureDebutDate = new Date(performance.timing.navigationStart + heureDebutPerformance);
-    let delaiAvantEchantillonage = heureDebutPerformance - performance.now() + 200;
+    let delaiAvantEchantillonage = heureDebutPerformance - performance.now();
     console.log("Dernier bit de préambule détecté, début de l'échantillonnage dans " + delaiAvantEchantillonage);
     setTimeout(commencerEchantillonnage, delaiAvantEchantillonage);
     preambuleTermine = true;
