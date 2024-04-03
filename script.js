@@ -2,7 +2,7 @@ let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
-const TONE_LENGTH_MS = 400;
+const TONE_LENGTH_MS = 250;
 const ADDITIONAL_DELAY_MS = 0;  // Augmentez si nécessaire pour vous assurer que le son de départ est joué
 
 // Nouvelles fréquences
@@ -87,8 +87,11 @@ async function sendTextAsSound(text) {
     console.log("Préambule 1 : " + (maintenant + (TONE_LENGTH_MS * (repetitionsPreambule-1))/1000) + " " + TONE_LENGTH_MS);
     
     for(let i=0; i<tones.length; i++){
-      playFrequency(tones[i], maintenant + (TONE_LENGTH_MS * i)/1000 + repetitionsPreambule * TONE_LENGTH_MS / 1000, TONE_LENGTH_MS);
-      console.log("Tone : " + (maintenant + (TONE_LENGTH_MS * i)/1000 + repetitionsPreambule * TONE_LENGTH_MS / 1000) + " " + TONE_LENGTH_MS);
+      playFrequency(tones[i], maintenant 
+        + (TONE_LENGTH_MS * i)/1000 + repetitionsPreambule * TONE_LENGTH_MS / 1000
+        + (TONE_LENGTH_MS * 2)/1000
+        , TONE_LENGTH_MS);
+      console.log("Tone : " + (maintenant + (TONE_LENGTH_MS * i)/1000 + repetitionsPreambule * TONE_LENGTH_MS/1000 + (TONE_LENGTH_MS/1000 * 2)) + " " + TONE_LENGTH_MS);
     }
 }
 
@@ -248,13 +251,13 @@ function debuterEcoute(){
       console.log("Son préambule détecté");
       
       // mesurer la longueur du signal de préambule
-        heurePreambule = performance.now();
+      heurePreambule = performance.now();
 
       if(!preambuleHaut){ // détection d'un front montant
         preambuleHaut = true;
         heuresFrontsMontants[indexHFM] = heurePreambule;
         indexHFM++;
-        console.log("Front montant préambule");
+        console.log("Front montant préambule : " + heuresFrontsMontants[indexHFM-1]);
       }
   }
   
@@ -272,20 +275,24 @@ function debuterEcoute(){
   }
 
   // vérifier si on n'est pas dans le dernier bit qui dure deux fois plus longtemps
-  if(performance.now() - heuresFrontsMontants[indexHFM-1] > TONE_LENGTH_MS
+  if(performance.now() - heuresFrontsMontants[indexHFM-1] > TONE_LENGTH_MS * 0.75
   && preambuleHaut){
     //console.log(performance.now() - heuresFrontsMontants[indexHFM-1]);
     // dans ce cas il faut caler l'horloge
     let somme = 0;
-    console.log("indexHFD : " + indexHFD);
-    for(let i=0; i<indexHFD; i++){
-      somme += heuresFrontsDescendants[i] + (indexHFD + 1 - i) * TONE_LENGTH_MS;
+    console.log("indexHFM : " + indexHFM);
+    for(let i=0; i<indexHFM; i++){
+      somme += heuresFrontsMontants[i] + (indexHFM + 0.5 - i) * TONE_LENGTH_MS;
+      console.log("test : " + (heuresFrontsMontants[i] + (indexHFM + 0.5 - i) * TONE_LENGTH_MS));
     }
-    let heureDebutPerformance = somme / (indexHFD); // toujours + 1 ici car voir schéma
+    let heureDebutPerformance = somme / indexHFM;
     //let heureDebutDate = new Date(performance.timing.navigationStart + heureDebutPerformance);
     let delaiAvantEchantillonage = heureDebutPerformance - performance.now();
     console.log("Dernier bit de préambule détecté, début de l'échantillonnage dans " + delaiAvantEchantillonage);
+    console.log("heure actuelle : " + performance.now());
     setTimeout(commencerEchantillonnage, delaiAvantEchantillonage);
+    frequencyDataEnCours = true;
+    getMaxFrequency();
     preambuleTermine = true;
   }
 
@@ -318,7 +325,6 @@ function terminerEcoute(){
   heuresFrontsDescendants = [];
   indexHFD = 0; // HFD = temps fronts descendants
 
-  idEchantillonnage = null;
   frequencyDataEnCours = false;
 }
 
