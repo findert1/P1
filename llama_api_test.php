@@ -15,10 +15,12 @@
     <?php
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prompt'])) {
         $url = 'http://localhost:11434/api/generate';
-
+    
         $data = array(
             'model' => 'llama2',
-            'prompt' => $_POST['prompt']
+            'prompt' => $_POST['prompt'],
+            'stream' => false,
+             
         );
 
         $data_string = json_encode($data);
@@ -32,7 +34,7 @@
             'Content-Length: ' . strlen($data_string))
         );
 
-       // ... [le reste du code précédent jusqu'à la définition des options cURL]
+       
 
 $response = curl_exec($ch); // Assurez-vous que cette ligne est bien avant l'initialisation de $fullResponse
 $err = curl_error($ch);
@@ -41,11 +43,11 @@ curl_close($ch);
 if ($err) {
     echo "Erreur cURL : " . $err;
 } else {
-    // Initialisez $fullResponse après avoir reçu la réponse de cURL
+    
     $fullResponse = "";
 
-    // Si vous ne recevez pas de réponse ou si $response est null, cela générera une erreur.
-    // Donc vérifiez d'abord si $response contient quelque chose.
+    
+    //  $response contient quelque chose.
     if ($response) {
         // Séparation de la réponse brute en lignes
         $lines = explode("\n", $response);
@@ -65,15 +67,30 @@ if ($err) {
         }
     }
 
-    // Affichez la réponse complète si elle existe, sinon affichez un message d'erreur
+    
+
+                // Utilisation d'une expression régulière pour extraire le texte entre les guillemets
+                preg_match('/"([^"]+)"/', $fullResponse, $matches);
+
+                // $matches[1] contiendra le texte entre les guillemets si un match a été trouvé
+                if (!empty($matches[1])) {
+                    echo "<p>Correction :</p><pre>" . htmlspecialchars($matches[1]) . "</pre>";
+                } else {
+                    echo "<p>Aucune correction trouvée dans la réponse.</p>";
+                }
+
+                // ... [le reste du code]
+
+                 // Affichez la réponse complète si elle existe, sinon affichez un message d'erreur
     if ($fullResponse) {
         echo "<p>Réponse complète de Llama 2:</p><pre>" . htmlspecialchars($fullResponse) . "</pre>";
     } else {
         echo "<p>Erreur : Aucune réponse reçue de l'API.</p>";
     }
-}
 
-// ... [le reste du code]
+                }
+
+
 
 
 
