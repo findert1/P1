@@ -13,16 +13,13 @@ const STEP_FREQ = 20;
 let serverTime;
 let ecartAbsoluLocal;
 //syncClockWithNTP();
-
 //setInterval(synchroniserHeureAvecNTP, 1000);
-
 //setInterval(envoiTexte, 1100);
 
 sendButton.addEventListener("click", function() {
     if(audioContext.state === "suspended") {
         audioContext.resume().then(() => {
             console.log("AudioContext resumed successfully");
-            //envoiTexte();
             envoiTexte();
         });
     } else {
@@ -119,7 +116,8 @@ function charToFrequency(caractere){
   return START_FREQ + caractere.charCodeAt(0) * STEP_FREQ;
 }
 
-function affichage(tab){ // faire en sorte que cette fonction retourne un string propre
+function affichage(tab){ // faire en sorte que cette fonction affiche un string sur le document
+  console.log("affichage du résultat " + tab);
   let chaine = new Array();
   let j=0;
   for(let i=0; i<tab.length; i++){
@@ -128,19 +126,17 @@ function affichage(tab){ // faire en sorte que cette fonction retourne un string
       j++;
     }
   }
-  return chaine.join("");
+  document.getElementById("result").innerText = chaine.join("");
 }
 
 function frequencyToChar(frequence){
   let code = Math.round((frequence - START_FREQ) / STEP_FREQ); 
-  return String.fromCharCode(code);
-  /*
+  //return String.fromCharCode(code);
   if(code >= 32){
     return String.fromCharCode(code);
   }else{
     return ' ';
   }
-  */
 }
 
 // variables
@@ -202,24 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch((error) => {
         console.error('Error accessing microphone:', error);
-      });
-      document.getElementById('reset-button').addEventListener('click', () => {
-        /* ne sert à rien, supprimer le bouton de reset
-        index = 0;
-        indexLettre = 0;
-        //register = new Array();
-        result = new Array();
-        document.getElementById("result").innerText = "";
-
-        preambuleHaut = false;
-        heurePreambule = null;
-        heuresFrontsMontants = [];
-        indexHFM = 0; // HFM = temps fronts montants
-        heuresFrontsDescendants = [];
-        indexHFD = 0; // HFD = temps fronts descendants
-
-        idEchantillonnage = null;
-        */
       });
 });
 
@@ -315,9 +293,10 @@ function terminerEcoute(){
   index = 0;
   indexLettre = 0;
   //register = new Array();
+  affichage(result);
   result = new Array();
-  document.getElementById("result").innerText = "";
-
+  //document.getElementById("result").innerText = "";
+  isListening = false;
   preambuleHaut = false;
   heurePreambule = null;
   heuresFrontsMontants = [];
@@ -331,18 +310,24 @@ function terminerEcoute(){
 let frequencyDataEnCours = false;
 function echantillonnage(){
   const [maxFreq, amplitude] = getMaxFrequency();
-
-  var lettreTemp = frequencyToChar(maxFreq);
-  result[indexLettre] = lettreTemp;
-  console.log(lettreTemp);
-  indexLettre ++;
-  console.log("échantillonnage... " + indexLettre);
+  if(maxFreq < END_FREQ - marge){
+    var lettreTemp = frequencyToChar(maxFreq);
+    result[indexLettre] = lettreTemp;
+    console.log(lettreTemp);
+    indexLettre ++;
+    console.log("échantillonnage... " + indexLettre);
+  }
 
   // détection du bit de fin
   if(amplitude >= seuil 
     && maxFreq > END_FREQ - marge 
     && maxFreq < END_FREQ + marge ){
       terminerEcoute();
+  }
+
+  if(amplitude < seuil){
+    result = "Erreur lors de la transmission du message, bit de fin non détecté.";
+    terminerEcoute();
   }
 }
 
