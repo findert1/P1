@@ -1,4 +1,4 @@
-let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let audioContext = new window.AudioContext();
 
 const textInput = document.getElementById("text-input");
 const sendButton = document.getElementById("send-sound");
@@ -165,7 +165,6 @@ seuilElement.textContent = `Seuil : ${seuil}`;
 let chrono = performance.now();
 
 let preambuleHaut = false;
-let heurePreambule;
 let heuresFrontsMontants = [];
 let indexHFM = 0; // HFM = temps fronts montants
 let heuresFrontsDescendants = [];
@@ -212,9 +211,12 @@ function getMaxFrequency(){
   const maxIndex = frequencyData.indexOf(Math.max(...frequencyData));
   maxFrequencyElement.textContent = `Max Frequency: ${maxIndex * frequencyResolution}, ${frequencyToChar(maxIndex * frequencyResolution)}`;
   maxFrequencyValueElement.textContent = `Max Frequency Value: ${frequencyData[maxIndex]}`;
-
-  requestAnimationFrame(getMaxFrequency);
-
+  
+  if(frequencyDataEnCours){
+    requestAnimationFrame(getMaxFrequency);
+  
+  }
+  
   return [maxIndex * frequencyResolution, frequencyData[maxIndex]];
 }
 
@@ -227,13 +229,10 @@ function debuterEcoute(){
     && maxFreq > START_FREQ - marge 
     && maxFreq < START_FREQ + marge ){ // quand on est dans les parties hautes du préambule
       console.log("Son préambule détecté");
-      
-      // mesurer la longueur du signal de préambule
-      heurePreambule = performance.now();
 
       if(!preambuleHaut){ // détection d'un front montant
         preambuleHaut = true;
-        heuresFrontsMontants[indexHFM] = heurePreambule;
+        heuresFrontsMontants[indexHFM] = performance.now();
         indexHFM++;
         console.log("Front montant préambule : " + heuresFrontsMontants[indexHFM-1]);
       }
@@ -298,7 +297,6 @@ function terminerEcoute(){
   //document.getElementById("result").innerText = "";
   isListening = false;
   preambuleHaut = false;
-  heurePreambule = null;
   heuresFrontsMontants = [];
   indexHFM = 0; // HFM = temps fronts montants
   heuresFrontsDescendants = [];
@@ -326,8 +324,8 @@ function echantillonnage(){
   }
 
   if(amplitude < seuil){
-    result = "Erreur lors de la transmission du message, bit de fin non détecté.";
-    terminerEcoute();
+    //result = "Erreur lors de la transmission du message, bit de fin non détecté.";
+    //terminerEcoute();
   }
 }
 
