@@ -44,7 +44,7 @@
                 <form method="post">
                     <label for="prompt">Copiez le texte que vous souhaitez corriger ici</label><br>
                     <input type="text" id="prompt" name="prompt" required><br>
-                    <input type="submit" name="correct" value="Tenter de corriger la réponse avec l'IA">
+                    <button >Tenter de corriger la réponse avec l'IA"</button>
                 </form>
 
                 <?php
