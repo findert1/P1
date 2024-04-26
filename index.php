@@ -35,59 +35,78 @@
             </section>
             
             <section>
-                <h3>Fortes fréquences enregistrées:</h3>
-                <p id="seuil"></p>
-                <p id="freqMin"></p>
-                <ul id="liste"></ul>
-                <h4>Résultat: </h4>
-                <p id="result">Le résultat s'affichera ici.</p>
-                <form method="post">
-                    <label for="prompt">Copiez le texte que vous souhaitez corriger ici</label><br>
-                    <input type="text" id="prompt" name="prompt" required><br>
-                    <button >Tenter de corriger la réponse avec l'IA"</button>
-                </form>
+    <h3>Fortes fréquences enregistrées:</h3>
+    <p id="seuil"></p>
+    <p id="freqMin"></p>
+    <ul id="liste"></ul>
+    <h4>Résultat: </h4>
+    <p id="prompt">Le résultat s'affichera ici.</p>
+    <form method="post">
+        <label for="prompt">Copiez le texte que vous souhaitez corriger ici :</label><br>
+        <input type="text" id="prompt" name="prompt" required><br>
+        <button type="submit">Tenter de corriger la réponse avec l'IA</button>
+    </form>
 
-                <?php
-                if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['correct'])) {
-                    $prompt = filter_input(INPUT_POST, 'prompt', FILTER_SANITIZE_STRING);
-                    $url = 'http://localhost:11434/api/generate';
-
-                    $data = array(
-                        'model' => 'llama2',
-                        'prompt' => $prompt
-                    );
-
-                    $data_string = json_encode($data);
-
-                    $ch = curl_init($url);
-                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                        'Content-Type: application/json',
-                        'Content-Length: ' . strlen($data_string)
-                    ));
-
-                    $response = curl_exec($ch);
-                    $err = curl_error($ch);
-                    curl_close($ch);
-
-                    if ($err) {
-                        echo "Erreur cURL : " . $err;
-                    } else {
-                        $responseArray = json_decode($response, true);
-                        if (isset($responseArray['response'])) {
-                            echo "<p>Réponse complète de Llama 2:</p><pre>" . htmlspecialchars($responseArray['response']) . "</pre>";
-                        } else {
-                            echo "<p>Erreur : Aucune réponse reçue de l'API.</p>";
-                        }
+    <?php
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['prompt'])) {
+        $url = 'http://localhost:11434/api/generate';
+    
+        $customPrompt = "Je veux que tu corrige, en mettant le résultat entre guillemets les fautes de frappe dans la phrase suivante : " . $_POST['prompt'];
+    
+        $data = array(
+            'model' => 'llama2',
+            'prompt' => $customPrompt
+        );
+    
+        $data_string = json_encode($data);
+    
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($data_string)
+        ));
+    
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+    
+        if ($err) {
+            echo "Erreur cURL : " . $err;
+        } else {
+            // Assembler la réponse complète
+            $fullResponse = "";
+            $lines = explode("\n", $response);
+            foreach ($lines as $line) {
+                $json = json_decode($line, true);
+                if ($json && isset($json['response'])) {
+                    $fullResponse .= $json['response'];
+                    if (isset($json['done']) && $json['done']) {
+                        break;
                     }
                 }
-                ?>
-            </section>
-        </main>
+            }
+    
+            // Extraire la partie entre guillemets
+            if (preg_match('/"([^"]+)"/', $fullResponse, $matches)) {
+                echo "<p>Correction trouvée : " . htmlspecialchars($matches[1]) . "</p>";
+            } else {
+                echo "<p>Aucune correction trouvée dans la réponse.</p>";
+            }
+    
+            // Afficher la réponse complète pour débogage
+           // echo "<p>Réponse complète de l'API:</p><pre>" . htmlspecialchars($fullResponse) . "</pre>";
+        }
+    }
+    
+    ?>
+</section>
 
-        <main>
+        
+
+        
             <div class="container">
                 <div class="section-content">
                     <h2 id="message">Envoyer un Message</h2>
